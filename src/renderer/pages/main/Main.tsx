@@ -1,11 +1,14 @@
+import { observer } from 'mobx-react-lite';
+import { useStore } from 'renderer/store';
 import BasicLayout from '../../layouts/basicLayout';
 
-function Main() {
+const Main = observer(() => {
+  const { secondsPassed } = useStore();
   return (
     <BasicLayout>
-      <div>Main Page</div>
+      <div>Main Page - {secondsPassed} </div>
     </BasicLayout>
   );
-}
+});
 
 export default Main;

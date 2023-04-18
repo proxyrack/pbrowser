@@ -18,6 +18,8 @@ const GlobalStyle = createGlobalStyle`
   *, *:before, *:after {
     box-sizing: border-box;
   }
+
+  // TODO - add fonts here
 `;
 
 export default GlobalStyle;
