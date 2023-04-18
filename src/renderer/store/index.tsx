@@ -1,9 +1,9 @@
-import { ReactNode, createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 import Store from './store';
 
 interface IStoreProvider {
   value: null | object;
-  children: ReactNode;
+  children: JSX.Element;
 }
 
 const StoreContext = createContext<any>(null);

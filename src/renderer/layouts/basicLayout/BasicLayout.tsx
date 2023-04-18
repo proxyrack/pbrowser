@@ -1,9 +1,8 @@
-import { ReactNode } from 'react';
-import Menu from '../../components/menu';
+import Menu from '../../components/Menu';
 import { MenuBox, ContentBox, LayoutBox } from './styles';
 
 interface IBasicLayout {
-  children: ReactNode;
+  children: JSX.Element;
 }
 
 function BasicLayout({ children }: IBasicLayout) {

@@ -1,5 +1,7 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import IPCConnect from './ipc/IpcConnect';
+
 // Pages
 import Main from './pages/main';
 
@@ -16,11 +18,13 @@ export default function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyles />
         <StoreProvider value={new AppStore()}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Main />} />
-            </Routes>
-          </Router>
+          <IPCConnect>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Main />} />
+              </Routes>
+            </Router>
+          </IPCConnect>
         </StoreProvider>
       </ThemeProvider>
     </div>
