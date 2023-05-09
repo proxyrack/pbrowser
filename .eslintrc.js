@@ -1,6 +1,8 @@
 module.exports = {
   extends: 'erb',
   rules: {
+    'no-shadow': 'warn',
+    'no-unused-vars': 'warn',
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
     'react/react-in-jsx-scope': 'off',
@@ -9,6 +11,12 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/no-import-module-exports': 'off',
     'react/function-component-definition': 'off',
+    'prettier/prettier': [
+      'error',
+      {
+        printWidth: 90,
+      },
+    ],
   },
   parserOptions: {
     ecmaVersion: 2020,

@@ -1,16 +1,14 @@
 import { makeAutoObservable } from 'mobx';
 
 class Store {
-  secondsPassed = 0;
-  // TODO - add methods to work with store here and parameters
-  // Create new methods
+  pageTitle: string = '';
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  increaseTimer() {
-    this.secondsPassed += 1;
+  setPageTitle(title: string) {
+    this.pageTitle = title;
   }
 }
 

@@ -1,28 +1,34 @@
 import { BrowserWindow, app, shell } from 'electron';
+import Store from 'electron-store';
 import path from 'path';
-import installExtension, {
-  REACT_DEVELOPER_TOOLS,
-} from 'electron-devtools-installer';
-import startIpc from '../ipc';
-import { isDebug, resolveHtmlPath } from '../util';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import startIpc from '../ipc/ipc';
+import { resolveHtmlPath } from '../util';
 import MenuBuilder from '../menu';
 import { IState } from './istate';
+import { IStore } from './istore';
 
 export default class State implements IState {
   mainWindow: BrowserWindow | null = null;
 
+  store: Store<IStore> | null = null;
+
+  constructor() {
+    this.store = new Store<IStore>({ cwd: 'pbrowser' });
+  }
+
   static async installExtensions() {
     const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
 
-    return installExtension(REACT_DEVELOPER_TOOLS, { forceDownload }).catch(
-      console.log
-    );
+    return installExtension(REACT_DEVELOPER_TOOLS, { forceDownload }).catch(console.log);
   }
 
   async createMainWindow() {
-    if (isDebug()) {
-      await State.installExtensions();
-    }
+    // currently react dev tools are not working because of this issue https://github.com/electron/electron/issues/36545
+    // the code will be uncommented as soon as it resolved
+    // if (isDebug()) {
+    //   await State.installExtensions();
+    // }
 
     const RESOURCES_PATH = app.isPackaged
       ? path.join(process.resourcesPath, 'assets')
