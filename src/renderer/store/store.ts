@@ -1,14 +1,23 @@
-import { makeAutoObservable } from 'mobx';
+import { BrowserProfile } from 'main/browser-profile/browser-profile';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 class Store {
-  pageTitle: string = '';
+  profiles: BrowserProfile[] = [];
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  setPageTitle(title: string) {
-    this.pageTitle = title;
+  setProfiles(profiles: Array<any>) {
+    this.profiles = profiles;
+  }
+
+  async fetchProfiles() {
+    const allProfiles = await window.electron.api.getProfiles();
+
+    runInAction(() => {
+      this.profiles = allProfiles;
+    });
   }
 }
 

@@ -9,6 +9,7 @@ const electronHandler = {
     saveProfile: (model: BrowserProfile) =>
       ipcRenderer.invoke(Channel.SaveProfile, model),
     launchProfile: (id: string) => ipcRenderer.invoke(Channel.LaunchProfile, id),
+    getProfiles: () => ipcRenderer.invoke(Channel.GetProfiles),
   },
 };
 

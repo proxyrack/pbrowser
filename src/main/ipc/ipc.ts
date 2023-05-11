@@ -1,11 +1,13 @@
 import { app, ipcMain } from 'electron';
 import { FingerprintGenerator } from 'fingerprint-generator';
 import { BrowserProfile } from 'main/browser-profile/browser-profile';
+import { StoredBrowserProfile } from 'main/browser-profile/stored-browser-profile';
 import { randomUUID } from 'crypto';
 import Store from 'electron-store';
 import path from 'path';
 import { spawn } from 'child_process';
 import { openSync } from 'fs';
+import { orderBy } from 'lodash';
 import { IState } from '../state/istate';
 import Channel from './channel';
 
@@ -14,7 +16,7 @@ const startIpc = (state: IState): void => {
   ipcMain.handle(Channel.SaveProfile, async (event, profile: BrowserProfile) => {
     const allProfiles = state.store?.get('profiles') || [];
     profile.id = profile.id || randomUUID();
-    allProfiles.push(profile);
+    allProfiles.push(profile as StoredBrowserProfile);
     state.store?.set('profiles', allProfiles);
 
     return { status: 'saved', obj: profile };
@@ -59,6 +61,17 @@ const startIpc = (state: IState): void => {
       console.log(`child process exited with error ${err}`);
       console.log(err);
     });
+  });
+
+  ipcMain.handle(Channel.GetProfiles, async (event) => {
+    const allProfiles = state.store?.get('profiles') || [];
+    const orderedProfiles = orderBy(
+      allProfiles,
+      [(p) => p.lastLaunchDate || '1970-01-01T00:00:00.000Z', (p) => p.name],
+      ['desc', 'asc']
+    );
+
+    return orderedProfiles;
   });
 };
 

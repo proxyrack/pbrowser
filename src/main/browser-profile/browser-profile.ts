@@ -1,13 +1,7 @@
-export interface BrowserProfile {
+import { StoredBrowserProfile } from './stored-browser-profile';
+
+export interface BrowserProfile
+  extends Omit<StoredBrowserProfile, 'id' | 'lastLaunchDate'> {
   id: string | null;
-  os: 'macos' | 'windows';
-  proxy?: any;
-  fillBasedOnExternalIp: boolean;
-  timezone?: any;
-  webRtc?: any;
-  geolocation?: any;
-  navigator?: any;
-  fonts?: any;
-  mediaDevices?: any;
-  hardware?: any;
+  lastLaunchDate?: Date;
 }

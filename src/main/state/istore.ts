@@ -1,5 +1,5 @@
-import { BrowserProfile } from 'main/browser-profile/browser-profile';
+import { StoredBrowserProfile } from 'main/browser-profile/stored-browser-profile';
 
 export interface IStore {
-  profiles: BrowserProfile[];
+  profiles: StoredBrowserProfile[];
 }

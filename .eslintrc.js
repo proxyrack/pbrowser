@@ -10,7 +10,9 @@ module.exports = {
     'import/extensions': 'off',
     'import/no-unresolved': 'off',
     'import/no-import-module-exports': 'off',
+    'import/prefer-default-export': 'off',
     'react/function-component-definition': 'off',
+    'react/require-default-props': 'off',
     'prettier/prettier': [
       'error',
       {
