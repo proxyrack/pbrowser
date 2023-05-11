@@ -1,5 +1,4 @@
-### TBA
-<p>TBA use electron Electron React Boilerplate and his packages</p>
+### Pbrowser
 
 ## Install
 ```bash
@@ -22,9 +21,4 @@ npm run package
 ```
 
 ## Docs
-Electrob Boiler Plate [docs and guides here](https://electron-react-boilerplate.js.org/docs/installation)
-
-
-## License
-
-MIT © [Electron React Boilerplate](https://github.com/electron-react-boilerplate)
+Electron Boiler Plate [docs and guides here](https://electron-react-boilerplate.js.org/docs/installation)
