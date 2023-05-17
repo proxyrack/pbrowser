@@ -19,6 +19,7 @@ module.exports = {
         printWidth: 90,
       },
     ],
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
   },
   parserOptions: {
     ecmaVersion: 2020,

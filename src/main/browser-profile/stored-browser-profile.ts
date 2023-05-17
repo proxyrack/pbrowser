@@ -1,11 +1,13 @@
 export interface StoredBrowserProfile {
   id: string;
   name: string;
-  description?: string;
-  lastLaunchDate?: string;
+  description: string;
+  lastEditDate: string;
   os: 'macos' | 'windows';
-  proxy?: any;
+  browser: 'chrome';
   fillBasedOnExternalIp: boolean;
+  lastLaunchDate?: string;
+  proxy?: any;
   timezone?: any;
   webRtc?: any;
   geolocation?: any;

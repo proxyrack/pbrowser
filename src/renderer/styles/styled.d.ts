@@ -7,16 +7,19 @@ declare module 'styled-components' {
     primaryLighter: string;
     secondary: string;
     backgroundMain: string;
-    backgroundAside: string;
     asideItemActive: string;
     fontLight: string;
     fontDark: string;
     fontSecondary: string;
     success: string;
     danger: string;
+    dangerLighter: string;
     disabledDark: string;
   }
   export interface DefaultTheme {
     colors: DefaultThemeColors;
+    transitions: {
+      default: string;
+    };
   }
 }

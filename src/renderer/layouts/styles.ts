@@ -4,21 +4,22 @@ import styled from 'styled-components';
 export const LayoutBox = styled.div`
   display: flex;
   flex-direction: row;
-  height: 100vh;
   width: 100%;
 `;
 export const SidebarBox = styled.aside`
-  background-color: ${({ theme }) => theme.colors.backgroundAside};
+  background-color: ${({ theme }) => theme.colors.primary};
   width: 300px;
   min-width: 300px;
+  height: 100vh;
   padding: 1.5rem;
-  overflow: hidden;
+  overflow: auto;
+  position: fixed;
 `;
 export const ContentBox = styled.main`
   background-color: ${({ theme }) => theme.colors.backgroundMain};
   width: 100%;
   padding: 1.5rem 2.5rem;
-  overflow-y: scroll;
+  margin-left: 300px;
 `;
 export const Divider = styled.hr`
   border-color: ${({ theme }) => theme.colors.asideItemActive};
@@ -52,6 +53,8 @@ export const MenuLink = styled(NavLink)`
   font-size: 1rem;
   text-decoration: none;
   border-radius: 8px;
+  transition: ${({ theme }) => theme.transitions.default};
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.asideItemActive};
   }

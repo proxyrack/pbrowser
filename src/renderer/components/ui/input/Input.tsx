@@ -5,18 +5,27 @@ import * as S from './styles';
 type InputProps = {
   id: string;
   type: string;
+  maxlength?: number;
   placeholder: string;
   name: string;
   fullWidth: boolean;
 };
 
-const Input = ({ id, type, placeholder, name, fullWidth }: InputProps): JSX.Element => {
+const Input = ({
+  id,
+  type,
+  maxlength,
+  placeholder,
+  name,
+  fullWidth,
+}: InputProps): JSX.Element => {
   const { register } = useFormContext();
 
   return (
     <S.Input
       id={id}
       type={type}
+      maxLength={maxlength}
       placeholder={placeholder}
       fullWidth={fullWidth}
       {...register(name)}

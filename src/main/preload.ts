@@ -1,12 +1,10 @@
-// Disable no-unused-vars, broken for spread args
-/* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer } from 'electron';
+import { GeneralSettings } from 'shared/models/renderer-data-schema';
 import Channel from './ipc/channel';
-import { BrowserProfile } from './browser-profile/browser-profile';
 
 const electronHandler = {
   api: {
-    saveProfile: (model: BrowserProfile) =>
+    saveProfile: (model: GeneralSettings) =>
       ipcRenderer.invoke(Channel.SaveProfile, model),
     launchProfile: (id: string) => ipcRenderer.invoke(Channel.LaunchProfile, id),
     getProfiles: () => ipcRenderer.invoke(Channel.GetProfiles),

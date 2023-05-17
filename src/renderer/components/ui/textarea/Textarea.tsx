@@ -6,12 +6,20 @@ type TextareaProps = {
   id: string;
   placeholder: string;
   name: string;
+  maxlength?: number;
 };
 
-const Textarea = ({ id, name, placeholder }: TextareaProps) => {
+const Textarea = ({ id, name, placeholder, maxlength }: TextareaProps) => {
   const { register } = useFormContext();
 
-  return <S.Textarea id={id} placeholder={placeholder} {...register(name)} />;
+  return (
+    <S.Textarea
+      id={id}
+      placeholder={placeholder}
+      maxLength={maxlength}
+      {...register(name)}
+    />
+  );
 };
 
 export default Textarea;

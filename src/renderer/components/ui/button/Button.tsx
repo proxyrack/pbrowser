@@ -7,6 +7,7 @@ type ButtonProps = {
   fullWidth?: boolean;
   children: string | JSX.Element;
   size?: 's' | 'm';
+  className?: string;
   onClick?: () => void;
 };
 
@@ -16,6 +17,7 @@ const Button = ({
   fullWidth = false,
   children,
   size = 'm',
+  className,
   onClick,
 }: ButtonProps): JSX.Element => {
   return (
@@ -24,6 +26,7 @@ const Button = ({
       color={color}
       fullWidth={fullWidth}
       size={size}
+      className={className}
       onClick={onClick}
     >
       {children}

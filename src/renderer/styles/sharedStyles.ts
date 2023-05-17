@@ -1,11 +1,12 @@
 import styled, { css } from 'styled-components';
 
 export const formControlBaseCss = css`
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
   border: 1px solid #dee0e6;
   font-size: 0.875rem;
   color: ${({ theme }) => theme.colors.fontDark};
+  transition: ${({ theme }) => theme.transitions.default};
 `;
 
 export const inputBaseCss = css`

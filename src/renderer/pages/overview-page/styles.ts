@@ -29,8 +29,8 @@ export const Actions = styled.div`
   }
 `;
 
-export const Spacer = styled.div`
+export const Spacer = styled.div<{ height: string }>`
   width: 100%;
   height: 0;
-  margin-top: 1rem;
+  margin-top: ${({ height }) => height};
 `;

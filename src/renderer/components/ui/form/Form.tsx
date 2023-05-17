@@ -1,32 +1,63 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import { FormProvider, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import {
+  DefaultValues,
+  FieldError,
+  FieldPath,
+  FieldValues,
+  FormProvider,
+  useForm,
+} from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useEffect } from 'react';
 
-const schema = yup
-  .object({
-    firstName: yup.string().required(),
-    age: yup.number().positive().integer().required(),
-  })
-  .required();
-type FormData = yup.InferType<typeof schema>;
+export type CustomFormError<T extends FieldValues> = {
+  name: FieldPath<T>;
+  error: FieldError;
+  shouldFocus: boolean;
+};
 
-type FormProps = {
-  controls: yup.ObjectSchema<any>;
-  onSubmit: (data: Object) => void;
-  onError: (errors: Object) => void;
+type FormProps<TData extends FieldValues> = {
+  schema: z.ZodObject<any>;
+  initialData: DefaultValues<TData>;
+  customErrors?: Array<CustomFormError<TData>>;
+  onSubmit: (data: TData) => void;
+  onError?: (errors: Object) => void;
+  onBlur?: (data: TData) => void;
   children: JSX.Element;
 };
 
-const Form = ({ controls, onSubmit, onError, children }: FormProps): JSX.Element => {
-  const methods = useForm<FormData>({
-    resolver: yupResolver(controls, { stripUnknown: true, abortEarly: false }),
-    defaultValues: controls.cast({}),
+const Form = <TData extends FieldValues>({
+  schema,
+  initialData,
+  customErrors,
+  onSubmit,
+  onError,
+  onBlur,
+  children,
+}: FormProps<TData>): JSX.Element => {
+  const methods = useForm<TData>({
+    resolver: zodResolver(schema),
+    defaultValues: initialData,
   });
 
+  const handleBlur = () => {
+    onBlur?.(methods.getValues());
+  };
+
+  useEffect(() => {
+    customErrors?.forEach((e) => {
+      methods.setError(e.name, e.error, { shouldFocus: e.shouldFocus });
+    });
+  }, [customErrors, methods]);
+
   return (
-    <FormProvider {...methods}>
-      <form noValidate onSubmit={methods.handleSubmit(onSubmit, onError)}>
+    <FormProvider<TData> {...methods}>
+      <form
+        noValidate
+        onSubmit={methods.handleSubmit(onSubmit, onError)}
+        onBlur={handleBlur}
+      >
         {children}
       </form>
     </FormProvider>

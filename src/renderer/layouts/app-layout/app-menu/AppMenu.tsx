@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import * as S from './styles';
-import Button from '../../../components/ui/button';
 import { menuItems } from './menu-items';
 
 const AppMenu = () => {
@@ -11,9 +10,9 @@ const AppMenu = () => {
 
   return (
     <>
-      <Button color="primaryLight" fullWidth onClick={handleCreateProfile}>
+      <S.MenuButton color="primaryLight" fullWidth onClick={handleCreateProfile}>
         Create Profile
-      </Button>
+      </S.MenuButton>
       <S.Divider />
       <S.MenuBox>
         {menuItems.map((item) => (

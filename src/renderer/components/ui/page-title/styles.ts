@@ -5,4 +5,5 @@ export const Heading = styled.h1`
   margin-bottom: 2.125rem;
   font-weight: 700;
   font-size: 1.75rem;
+  color: ${({ theme }) => theme.colors.fontDark};
 `;

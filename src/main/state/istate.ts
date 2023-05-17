@@ -4,5 +4,5 @@ import { IStore } from './istore';
 
 export interface IState {
   mainWindow: BrowserWindow | null;
-  store: Store<IStore> | null;
+  store: Store<IStore>;
 }

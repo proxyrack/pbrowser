@@ -3,6 +3,7 @@ export type ButtonColors = {
   primaryLight: string;
   secondary: string;
   invert: string;
+  danger: string;
 };
 
 export type ButtonColor = keyof ButtonColors;

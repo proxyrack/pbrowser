@@ -1,25 +1,27 @@
 import { app, ipcMain } from 'electron';
 import { FingerprintGenerator } from 'fingerprint-generator';
-import { BrowserProfile } from 'main/browser-profile/browser-profile';
-import { StoredBrowserProfile } from 'main/browser-profile/stored-browser-profile';
-import { randomUUID } from 'crypto';
+import { ProfileManager } from 'main/browser-profile/profile-manager';
 import Store from 'electron-store';
 import path from 'path';
 import { spawn } from 'child_process';
 import { openSync } from 'fs';
 import { orderBy } from 'lodash';
+import { ErrorResponse } from 'main/ipc/error-response';
+import { GeneralSettings } from 'shared/models/renderer-data-schema';
 import { IState } from '../state/istate';
 import Channel from './channel';
+import { SuccessResponse } from './success-response';
 
-// eslint-disable-next-line no-unused-vars
 const startIpc = (state: IState): void => {
-  ipcMain.handle(Channel.SaveProfile, async (event, profile: BrowserProfile) => {
-    const allProfiles = state.store?.get('profiles') || [];
-    profile.id = profile.id || randomUUID();
-    allProfiles.push(profile as StoredBrowserProfile);
-    state.store?.set('profiles', allProfiles);
+  const profileManager = new ProfileManager(state.store);
 
-    return { status: 'saved', obj: profile };
+  ipcMain.handle(Channel.SaveProfile, async (event, profile: GeneralSettings) => {
+    try {
+      if (profile.id === null) profileManager.create(profile);
+      return new SuccessResponse();
+    } catch (error: any) {
+      return ErrorResponse.fromError(error);
+    }
   });
 
   ipcMain.handle(Channel.LaunchProfile, (event, id: string) => {
@@ -64,7 +66,7 @@ const startIpc = (state: IState): void => {
   });
 
   ipcMain.handle(Channel.GetProfiles, async (event) => {
-    const allProfiles = state.store?.get('profiles') || [];
+    const allProfiles = profileManager.getAll();
     const orderedProfiles = orderBy(
       allProfiles,
       [(p) => p.lastLaunchDate || '1970-01-01T00:00:00.000Z', (p) => p.name],

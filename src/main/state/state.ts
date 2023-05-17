@@ -11,7 +11,7 @@ import { IStore } from './istore';
 export default class State implements IState {
   mainWindow: BrowserWindow | null = null;
 
-  store: Store<IStore> | null = null;
+  store: Store<IStore>;
 
   constructor() {
     this.store = new Store<IStore>({ cwd: 'pbrowser' });

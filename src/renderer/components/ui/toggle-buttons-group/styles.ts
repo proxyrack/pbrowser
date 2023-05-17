@@ -1,13 +1,17 @@
 import { formControlBaseCss } from 'renderer/styles/sharedStyles';
 import styled from 'styled-components';
 
-export const ButtonBox = styled.label`
-  position: relative;
-  display: inline-block;
-  height: 43px;
+export const ButtonGroupBox = styled.div`
+  & label:not(:last-child) {
+    margin-right: 1rem;
+  }
 `;
 
-export const Checkbox = styled.input.attrs(() => ({ type: 'checkbox' }))`
+export const ButtonBox = styled.label`
+  display: inline-block;
+`;
+
+export const Radio = styled.input`
   opacity: 0;
   width: 0;
   height: 0;
@@ -15,18 +19,20 @@ export const Checkbox = styled.input.attrs(() => ({ type: 'checkbox' }))`
 
   :checked + span {
     border-color: ${({ theme }) => theme.colors.primary};
-    background-color: #c5b5ff;
+    background-color: ${({ theme }) => theme.colors.primaryLighter}1A;
   }
 `;
 
-export const Button = styled.span<{ isToggled: boolean }>`
+export const Button = styled.span`
   ${formControlBaseCss};
-  position: absolute;
-  left: 0;
-  width: max-content;
+  display: inline-block;
   cursor: pointer;
   background-color: #fff;
   border-width: 1px;
   border-style: solid;
   border-color: ${({ theme }) => theme.colors.fontSecondary};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 `;

@@ -1,44 +1,30 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import { ModalProvider } from 'styled-react-modal';
 import IPCConnect from './ipc/IpcConnect';
-import AppLayout from './layouts/app-layout';
-import ManageProfileLayout from './layouts/manage-profile-layout';
-
-// Pages
-import ProfilesListPage from './pages/profiles-list-page';
-import CommingSoon from './pages/comming-soon';
-import OverviewPage from './pages/overview-page';
+import { MountPoint, FadingBackground } from './components/ui/confirm-dialog';
 
 // styles
 import GlobalStyles from './styles/globalStyles';
 import theme from './styles/theme';
+import ToastContainerStyled from './components/ui/toast-container-styled';
 
 // store
 import { StoreProvider, AppStore } from './store';
+import AppRouting from './AppRouting';
 
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <StoreProvider value={new AppStore()}>
-        <IPCConnect>
-          <Router>
-            <Routes>
-              <Route element={<AppLayout />}>
-                <Route index path="/" element={<ProfilesListPage />} />
-                <Route path="/settings" element={<CommingSoon />} />
-                <Route path="/support" element={<CommingSoon />} />
-              </Route>
-              <Route element={<ManageProfileLayout />}>
-                <Route path="/profiles/new">
-                  <Route index path="overview" element={<OverviewPage />} />
-                  <Route path="proxy" element={<CommingSoon />} />
-                </Route>
-              </Route>
-            </Routes>
-          </Router>
-        </IPCConnect>
-      </StoreProvider>
+      <ToastContainerStyled />
+      <ModalProvider backgroundComponent={FadingBackground}>
+        <MountPoint />
+        <StoreProvider value={new AppStore()}>
+          <IPCConnect>
+            <AppRouting />
+          </IPCConnect>
+        </StoreProvider>
+      </ModalProvider>
     </ThemeProvider>
   );
 }
