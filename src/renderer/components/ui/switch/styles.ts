@@ -1,4 +1,3 @@
-import { formControlBaseCss } from 'renderer/styles/sharedStyles';
 import styled from 'styled-components';
 
 export const SwitchBox = styled.label`

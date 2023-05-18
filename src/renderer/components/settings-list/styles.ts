@@ -46,6 +46,6 @@ export const Circle = styled.div`
 
 export const Triangle = styled.div`
   & > svg {
-    color: ${({theme}) => theme.colors.danger};
+    color: ${({ theme }) => theme.colors.danger};
   }
 `;

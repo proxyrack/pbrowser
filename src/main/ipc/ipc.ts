@@ -65,7 +65,7 @@ const startIpc = (state: IState): void => {
     });
   });
 
-  ipcMain.handle(Channel.GetProfiles, async (event) => {
+  ipcMain.handle(Channel.GetProfiles, async () => {
     const allProfiles = profileManager.getAll();
     const orderedProfiles = orderBy(
       allProfiles,
