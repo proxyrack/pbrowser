@@ -6,11 +6,10 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { openSync } from 'fs';
 import { orderBy } from 'lodash';
-import { ErrorResponse } from 'main/ipc/error-response';
 import { GeneralSettings } from 'shared/models/renderer-data-schema';
+import { MainResponse } from 'shared/ipc';
 import { IState } from '../state/istate';
 import Channel from './channel';
-import { SuccessResponse } from './success-response';
 
 const startIpc = (state: IState): void => {
   const profileManager = new ProfileManager(state.store);
@@ -18,9 +17,18 @@ const startIpc = (state: IState): void => {
   ipcMain.handle(Channel.SaveProfile, async (event, profile: GeneralSettings) => {
     try {
       if (profile.id === null) profileManager.create(profile);
-      return new SuccessResponse();
+      return MainResponse.success();
     } catch (error: any) {
-      return ErrorResponse.fromError(error);
+      return MainResponse.error(error);
+    }
+  });
+
+  ipcMain.handle(Channel.DeleteProfile, async (event, id: string) => {
+    try {
+      const removed = profileManager.delete(id);
+      return MainResponse.success(removed);
+    } catch (error: any) {
+      return MainResponse.error(error);
     }
   });
 

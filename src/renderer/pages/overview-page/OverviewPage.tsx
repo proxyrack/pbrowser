@@ -11,16 +11,18 @@ import {
   generalSettingsSchema,
 } from 'shared/models/renderer-data-schema';
 import { ErrorReason } from 'shared/errors/error-reason';
+import { MainResponse } from 'shared/ipc';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import Form, { CustomFormError } from '../../components/ui/form';
-import Input from '../../components/ui/input';
-import Label from '../../components/ui/label';
+import Form, { CustomFormError } from 'renderer/components/ui/form';
+import Input from 'renderer/components/ui/input';
+import Label from 'renderer/components/ui/label';
+import Textarea from 'renderer/components/ui/textarea';
+import Button from 'renderer/components/ui/button';
+import Switch from 'renderer/components/ui/switch';
+import SettingsList from 'renderer/components/settings-list';
+import { OSS, BROWSERS } from 'renderer/constants';
 import * as S from './styles';
-import Textarea from '../../components/ui/textarea';
-import Button from '../../components/ui/button';
-import Switch from '../../components/ui/switch';
-import SettingsList from '../../components/settings-list';
 
 const PROFILE_CREATION_INFO = {
   EXPANDED_P1:
@@ -29,8 +31,6 @@ const PROFILE_CREATION_INFO = {
     'However, if you want to have more control over your fingerprint parameters, you can click the Advanced Settings button. This will allow you to configure all the fingerprint parameters according to your preferences.',
   COLLAPSED: 'Learn more about Profile Creation.',
 };
-const OSS = [{ id: 'ov-os-mac', value: 'macos', text: 'masOs' }];
-const BROWSERS = [{ id: 'ov-br-chrome', value: 'chrome', text: 'Chrome' }];
 
 const OverviewPage = () => {
   const navigate = useNavigate();
@@ -60,18 +60,18 @@ const OverviewPage = () => {
   };
 
   const handleSubmit = async (data: GeneralSettings) => {
-    const response = await window.electron.api.saveProfile(data);
-    if (typeof response?.error === 'undefined') {
+    const response: MainResponse = await window.electron.api.saveProfile(data);
+    if (response.success) {
       toast.success(
         <>
-          The profile <strong>${data.name}</strong> is successfully created.
+          The profile <strong>{data.name}</strong> is successfully created.
         </>
       );
       resetAndRedirectHome();
       return;
     }
 
-    if (response.error.reason === ErrorReason.NotUnique) {
+    if (response.error!.reason === ErrorReason.NotUnique) {
       setApiError([
         {
           name: 'name',

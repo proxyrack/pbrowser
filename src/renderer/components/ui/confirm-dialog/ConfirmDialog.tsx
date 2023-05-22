@@ -91,7 +91,7 @@ const ConfirmDialog = confirmable(
 const mounter = createReactTreeMounter();
 export const MountPoint = createMountPoint(mounter);
 const createConfirmation = createConfirmationCreater(mounter);
-const confirmationCreator = createConfirmation(ConfirmDialog);
+const confirmationCreator = createConfirmation<any, boolean>(ConfirmDialog);
 
 export const confirm = (
   confirmation: string,

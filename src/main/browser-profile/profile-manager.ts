@@ -41,4 +41,17 @@ export class ProfileManager {
     allProfiles.push(newProfile);
     this.store.set('profiles', allProfiles);
   }
+
+  delete(id: string) {
+    const allProfiles = this.getAll();
+    const profileIndex = allProfiles.findIndex((p) => p.id === id);
+    if (profileIndex === -1) {
+      throw new BadRequestError('Profile not found', ErrorReason.NotFound, 'id');
+    }
+
+    const removed = allProfiles.splice(profileIndex, 1);
+    this.store.set('profiles', allProfiles);
+
+    return removed.pop();
+  }
 }

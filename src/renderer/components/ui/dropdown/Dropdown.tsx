@@ -15,7 +15,7 @@ const Dropdown = ({ trigger, menu, position = 'right' }: DropdownProps) => {
     setOpen(false);
   };
 
-  const ref = useOutsideClick(handleClickOutside);
+  const ref = useOutsideClick<HTMLUListElement>(handleClickOutside);
 
   const handleOpen = () => {
     setOpen(!open);
@@ -27,12 +27,11 @@ const Dropdown = ({ trigger, menu, position = 'right' }: DropdownProps) => {
         onClick: handleOpen,
       })}
       {open ? (
-        <S.Menu position={position}>
+        <S.Menu position={position} ref={ref}>
           {menu.map((menuItem, index) => (
             // eslint-disable-next-line react/no-array-index-key
             <S.MenuItem key={index}>
               {cloneElement(menuItem, {
-                ref,
                 onClick: () => {
                   menuItem.props.onClick();
                   setOpen(false);
