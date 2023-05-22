@@ -19,6 +19,10 @@ const AppRouting = () => {
             <Route index path="overview" element={<OverviewPage />} />
             <Route path="proxy" element={<CommingSoon />} />
           </Route>
+          <Route path="/profiles/:id/edit">
+            <Route index path="overview" element={<OverviewPage />} />
+            <Route path="proxy" element={<CommingSoon />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

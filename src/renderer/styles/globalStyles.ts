@@ -51,6 +51,7 @@ const GlobalStyle = createGlobalStyle`
     min-height: 100vh;
     line-height: 1.5;
     font-size: 1rem;
+    background-color: ${({ theme }) => theme.colors.backgroundMain};
   }
 
   html,

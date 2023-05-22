@@ -2,7 +2,6 @@ import { DefaultValues } from 'react-hook-form';
 import { z } from 'zod';
 
 export const generalSettingsSchema = z.object({
-  id: z.string().nullable(),
   name: z
     .string()
     .trim()
@@ -21,7 +20,11 @@ export const generalSettingsSchema = z.object({
 export type GeneralSettings = z.infer<typeof generalSettingsSchema>;
 
 export const generalSettingsDefaults: DefaultValues<GeneralSettings> = {
-  id: null,
   name: '',
   fillBasedOnExternalIp: true,
+};
+
+export type ManageBrowserProfileDto = {
+  id: string | null;
+  general: GeneralSettings;
 };

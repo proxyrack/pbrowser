@@ -1,10 +1,14 @@
 import { useNavigate } from 'react-router-dom';
+import { useStore } from 'renderer/store';
 import * as S from './styles';
 import { menuItems } from './menu-items';
 
 const AppMenu = () => {
   const navigate = useNavigate();
+  const { startCreation } = useStore();
+
   const handleCreateProfile = () => {
+    startCreation();
     navigate('/profiles/new/overview');
   };
 

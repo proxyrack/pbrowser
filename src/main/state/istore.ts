@@ -1,4 +1,4 @@
-import { StoredBrowserProfile } from 'main/browser-profile/stored-browser-profile';
+import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
 
 export interface IStore {
   profiles: StoredBrowserProfile[];

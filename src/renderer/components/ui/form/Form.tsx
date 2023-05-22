@@ -1,11 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import {
+  DeepPartialSkipArrayKey,
   DefaultValues,
   FieldError,
   FieldPath,
   FieldValues,
   FormProvider,
   useForm,
+  useWatch,
 } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,30 +22,33 @@ export type CustomFormError<T extends FieldValues> = {
 type FormProps<TData extends FieldValues> = {
   schema: z.ZodObject<any>;
   initialData: DefaultValues<TData>;
+  data?: DefaultValues<TData> | null;
   customErrors?: Array<CustomFormError<TData>>;
   onSubmit: (data: TData) => void;
   onError?: (errors: Object) => void;
-  onBlur?: (data: TData) => void;
+  onValuesChange?: (data: DeepPartialSkipArrayKey<TData>) => void;
   children: JSX.Element;
 };
 
 const Form = <TData extends FieldValues>({
   schema,
   initialData,
+  data,
   customErrors,
   onSubmit,
   onError,
-  onBlur,
+  onValuesChange,
   children,
 }: FormProps<TData>): JSX.Element => {
   const methods = useForm<TData>({
     resolver: zodResolver(schema),
     defaultValues: initialData,
   });
+  const watchedForm = useWatch({ control: methods.control });
 
-  const handleBlur = () => {
-    onBlur?.(methods.getValues());
-  };
+  useEffect(() => {
+    onValuesChange?.(watchedForm);
+  }, [watchedForm, onValuesChange]);
 
   useEffect(() => {
     customErrors?.forEach((e) => {
@@ -51,13 +56,15 @@ const Form = <TData extends FieldValues>({
     });
   }, [customErrors, methods]);
 
+  useEffect(() => {
+    if (data) {
+      methods.reset(data);
+    }
+  }, [data, methods]);
+
   return (
     <FormProvider<TData> {...methods}>
-      <form
-        noValidate
-        onSubmit={methods.handleSubmit(onSubmit, onError)}
-        onBlur={handleBlur}
-      >
+      <form noValidate onSubmit={methods.handleSubmit(onSubmit, onError)}>
         {children}
       </form>
     </FormProvider>

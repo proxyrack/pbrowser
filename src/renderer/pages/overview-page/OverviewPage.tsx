@@ -11,9 +11,10 @@ import {
   generalSettingsSchema,
 } from 'shared/models/renderer-data-schema';
 import { ErrorReason } from 'shared/errors/error-reason';
-import { MainResponse } from 'shared/ipc';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { DeepPartialSkipArrayKey } from 'react-hook-form';
+import { observer } from 'mobx-react-lite';
 import Form, { CustomFormError } from 'renderer/components/ui/form';
 import Input from 'renderer/components/ui/input';
 import Label from 'renderer/components/ui/label';
@@ -32,46 +33,47 @@ const PROFILE_CREATION_INFO = {
   COLLAPSED: 'Learn more about Profile Creation.',
 };
 
-const OverviewPage = () => {
+type ProfileSavedMsgProps = {
+  isEdit: boolean;
+  name: string;
+};
+const ProfileSavedMsg = ({ isEdit, name }: ProfileSavedMsgProps) => {
+  return (
+    <span>
+      The profile <strong>{name}</strong> is successfully {isEdit ? 'saved' : 'created'}.
+    </span>
+  );
+};
+
+const OverviewPage = observer(() => {
   const navigate = useNavigate();
-  const { setGeneralSettings, finishEditing } = useStore();
+  const {
+    setGeneralSettings,
+    finishEditing,
+    saveProfile,
+    profileSaveResult,
+    editedProfileUnmodified,
+    profileIsEdited,
+  } = useStore();
   const [apiError, setApiError] = useState<Array<CustomFormError<GeneralSettings>>>([]);
 
-  const resetAndRedirectHome = () => {
+  const resetAndRedirectHome = useCallback(() => {
     finishEditing();
     navigate('/');
-  };
+  }, [finishEditing, navigate]);
 
-  const showConfirm = (): Promise<boolean> => {
-    return confirm(
-      'Are you sure you want to cancel? The browser profile will not be saved.',
-      {
-        ok: { label: 'Yes', color: 'danger' },
-        cancel: { label: 'No', color: 'secondary' },
-      }
-    );
-  };
+  useEffect(() => {
+    if (profileSaveResult === null) return;
 
-  const handleCancel = async () => {
-    const confirmed = await showConfirm();
-    if (confirmed) {
-      resetAndRedirectHome();
-    }
-  };
-
-  const handleSubmit = async (data: GeneralSettings) => {
-    const response: MainResponse = await window.electron.api.saveProfile(data);
-    if (response.success) {
+    if (profileSaveResult.success) {
       toast.success(
-        <>
-          The profile <strong>{data.name}</strong> is successfully created.
-        </>
+        <ProfileSavedMsg name={profileSaveResult.data!.name} isEdit={profileIsEdited} />
       );
       resetAndRedirectHome();
       return;
     }
 
-    if (response.error!.reason === ErrorReason.NotUnique) {
+    if (profileSaveResult.error!.reason === ErrorReason.NotUnique) {
       setApiError([
         {
           name: 'name',
@@ -80,10 +82,31 @@ const OverviewPage = () => {
         },
       ]);
     }
+  }, [profileSaveResult, profileIsEdited, resetAndRedirectHome]);
+
+  const showConfirm = useCallback((): Promise<boolean> => {
+    const msg = profileIsEdited
+      ? 'Are you sure you want to cancel? The changes will be lost.'
+      : 'Are you sure you want to cancel? The browser profile will not be saved.';
+    return confirm(msg, {
+      ok: { label: 'Yes', color: 'danger' },
+      cancel: { label: 'No', color: 'secondary' },
+    });
+  }, [profileIsEdited]);
+
+  const handleCancel = async () => {
+    const confirmed = await showConfirm();
+    if (confirmed) {
+      resetAndRedirectHome();
+    }
   };
 
-  const handleBlur = (data: GeneralSettings) => {
-    setGeneralSettings(data);
+  const handleSubmit = async () => {
+    saveProfile();
+  };
+
+  const handleValuesChange = (data: DeepPartialSkipArrayKey<GeneralSettings>) => {
+    setGeneralSettings(data as GeneralSettings);
   };
 
   const handleProxyEdit = () => {};
@@ -105,9 +128,10 @@ const OverviewPage = () => {
       <Form<GeneralSettings>
         schema={generalSettingsSchema}
         initialData={generalSettingsDefaults}
+        data={editedProfileUnmodified?.general}
         customErrors={apiError}
         onSubmit={handleSubmit}
-        onBlur={handleBlur}
+        onValuesChange={handleValuesChange}
       >
         <>
           <S.Row>
@@ -178,6 +202,6 @@ const OverviewPage = () => {
       </Form>
     </>
   );
-};
+});
 
 export default OverviewPage;

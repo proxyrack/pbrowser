@@ -8,35 +8,28 @@ import RelativeDate from 'renderer/components/ui/relative-date';
 import { confirm } from 'renderer/components/ui/confirm-dialog';
 import { observer } from 'mobx-react-lite';
 import PageTitle from 'renderer/components/ui/page-title';
-import { toast } from 'react-toastify';
-import { BrowserProfile } from 'main/browser-profile/browser-profile';
+import { useNavigate } from 'react-router-dom';
+import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
 import * as S from './styles';
 
 const ProfilesListPage = observer(() => {
-  const { profiles, fetchProfiles, deleteProfile, profileDeletionResult } = useStore();
+  const { profiles, startEditing, fetchProfiles, deleteProfile } = useStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  useEffect(() => {
-    if (profileDeletionResult === null) return;
-    if (profileDeletionResult.success) {
-      toast.success(
-        `The ${profileDeletionResult.data?.name} profile is successfully deleted.`
-      );
-    } else {
-      toast.error('Error occurred during the attempt to delete profile.');
-    }
-  }, [profileDeletionResult]);
-
   const launchProfile = async (id: string) => {
     await window.electron.api.launchProfile(id);
   };
 
-  const handleEdit = () => {};
+  const handleEdit = (id: string) => {
+    startEditing(id);
+    navigate(`/profiles/${id}/edit/overview`);
+  };
 
-  const handleDelete = async (profile: BrowserProfile) => {
+  const handleDelete = async (profile: StoredBrowserProfile) => {
     const confirmed = await confirm(
       `Are you sure you want to delete the ${profile.name} browser profile?`,
       {
@@ -92,7 +85,7 @@ const ProfilesListPage = observer(() => {
                         </S.MoreButton>
                       }
                       menu={[
-                        <button type="button" onClick={handleEdit}>
+                        <button type="button" onClick={() => handleEdit(profile.id!)}>
                           Edit Profile
                         </button>,
                         <button type="button" onClick={() => handleDelete(profile)}>

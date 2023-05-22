@@ -16,7 +16,6 @@ export const SidebarBox = styled.aside`
   position: fixed;
 `;
 export const ContentBox = styled.main`
-  background-color: ${({ theme }) => theme.colors.backgroundMain};
   width: 100%;
   padding: 1.5rem 2.5rem;
   margin-left: 300px;

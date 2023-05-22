@@ -3,7 +3,7 @@ export interface StoredBrowserProfile {
   name: string;
   description: string;
   lastEditDate: string;
-  os: 'macos' | 'windows';
+  os: 'macos';
   browser: 'chrome';
   fillBasedOnExternalIp: boolean;
   lastLaunchDate?: string;

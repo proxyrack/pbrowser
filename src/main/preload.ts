@@ -1,10 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { GeneralSettings } from 'shared/models/renderer-data-schema';
+import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
 import Channel from './ipc/channel';
 
 const electronHandler = {
   api: {
-    saveProfile: (model: GeneralSettings) =>
+    saveProfile: (model: ManageBrowserProfileDto) =>
       ipcRenderer.invoke(Channel.SaveProfile, model),
     launchProfile: (id: string) => ipcRenderer.invoke(Channel.LaunchProfile, id),
     getProfiles: () => ipcRenderer.invoke(Channel.GetProfiles),

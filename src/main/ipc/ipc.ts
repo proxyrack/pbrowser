@@ -6,7 +6,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { openSync } from 'fs';
 import { orderBy } from 'lodash';
-import { GeneralSettings } from 'shared/models/renderer-data-schema';
+import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
 import { MainResponse } from 'shared/ipc';
 import { IState } from '../state/istate';
 import Channel from './channel';
@@ -14,10 +14,16 @@ import Channel from './channel';
 const startIpc = (state: IState): void => {
   const profileManager = new ProfileManager(state.store);
 
-  ipcMain.handle(Channel.SaveProfile, async (event, profile: GeneralSettings) => {
+  ipcMain.handle(Channel.SaveProfile, async (event, profile: ManageBrowserProfileDto) => {
+    let savedProfile = null;
+
     try {
-      if (profile.id === null) profileManager.create(profile);
-      return MainResponse.success();
+      if (profile.id === null) {
+        savedProfile = profileManager.create(profile);
+      } else {
+        savedProfile = profileManager.edit(profile);
+      }
+      return MainResponse.success(savedProfile);
     } catch (error: any) {
       return MainResponse.error(error);
     }
