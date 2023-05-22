@@ -14,7 +14,7 @@ export default class State implements IState {
   store: Store<IStore>;
 
   constructor() {
-    this.store = new Store<IStore>({ cwd: 'pbrowser' });
+    this.store = new Store<IStore>({ cwd: app.isPackaged ? undefined : 'pbrowser' });
   }
 
   static async installExtensions() {
