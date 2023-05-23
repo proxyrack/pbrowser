@@ -1,18 +1,21 @@
-import { app, ipcMain } from 'electron';
+import { ipcMain } from 'electron';
 import { FingerprintGenerator } from 'fingerprint-generator';
 import { ProfileManager } from 'main/browser-profile/profile-manager';
 import Store from 'electron-store';
 import path from 'path';
-import { spawn } from 'child_process';
-import { openSync } from 'fs';
 import { orderBy } from 'lodash';
-import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
-import { MainResponse } from 'shared/ipc';
+import { ManageBrowserProfileDto, BrowserStatusDto, BrowserStatus } from 'shared/models';
+import { MainResponse, Channel } from 'shared/ipc';
+import { Chromium } from 'main/chromium';
 import { IState } from '../state/istate';
-import Channel from './channel';
 
 const startIpc = (state: IState): void => {
   const profileManager = new ProfileManager(state.store);
+  const mainWindowContents = state.mainWindow!.webContents;
+
+  const browserStatusChanged = (status: BrowserStatusDto) => {
+    mainWindowContents.send(Channel.ProfileStatusChange, status);
+  };
 
   ipcMain.handle(Channel.SaveProfile, async (event, profile: ManageBrowserProfileDto) => {
     let savedProfile = null;
@@ -38,45 +41,48 @@ const startIpc = (state: IState): void => {
     }
   });
 
-  ipcMain.handle(Channel.LaunchProfile, (event, id: string) => {
-    const allProfiles = state.store?.get('profiles') || [];
-    const selectedProfile = allProfiles.find((p) => p.id === id);
-    if (selectedProfile === undefined) throw new Error();
+  ipcMain.handle(Channel.LaunchProfile, async (event, id: string) => {
+    try {
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Pending));
 
-    const generator = new FingerprintGenerator({
-      operatingSystems: [selectedProfile.os],
-      browsers: ['chrome'],
-      devices: ['desktop'],
-    });
-    const fingerprintWHeaders = generator.getFingerprint();
-    const profilePath = path.join(
-      app.getPath('userData'),
-      'pbrowser',
-      'browser-profile',
-      id
-    );
-    const fingerprintStore = new Store({
-      cwd: profilePath,
-      name: 'fingerprint',
-    });
-    fingerprintStore.set('fingerprint', fingerprintWHeaders.fingerprint);
-    const outFile = openSync(`${profilePath}/chrome-out.log`, 'a');
-    const errFile = openSync(`${profilePath}/chrome-err.log`, 'a');
-    const browserLocation = 'E:\\Downloads\\chromium\\chrome-win\\chrome.exe';
-    const args = [`--user-data-dir=${profilePath}`];
-    const childProc = spawn(browserLocation, args, {
-      stdio: ['ignore', outFile, errFile],
-    });
-    console.log(`PID is: ${childProc.pid}`);
+      const profile = profileManager.get(id);
+      const generator = new FingerprintGenerator({
+        operatingSystems: [profile.os],
+        browsers: ['chrome'],
+        devices: ['desktop'],
+      });
+      const fingerprintWHeaders = generator.getFingerprint();
+      const browserProfilePath = path.join(
+        path.dirname(state.store.path),
+        'browser-profiles',
+        id
+      );
+      const fingerprintStore = new Store({
+        cwd: browserProfilePath,
+        name: 'fingerprint',
+      });
+      fingerprintStore.set('fingerprint', fingerprintWHeaders.fingerprint);
 
-    childProc.on('close', (code) => {
-      console.log(`child process close with code ${code}`);
-    });
+      const chromium = new Chromium(id, browserProfilePath);
+      chromium.start();
 
-    childProc.on('error', (err) => {
-      console.log(`child process exited with error ${err}`);
-      console.log(err);
-    });
+      chromium.process?.once('spawn', () => {
+        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Active));
+      });
+      chromium.process?.once('close', (code) => {
+        // handle only normal close, other cases are handled on 'error'
+        if (code !== 0) return;
+        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Inactive));
+      });
+      chromium.process?.once('error', () => {
+        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+      });
+
+      return MainResponse.success();
+    } catch (error: any) {
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+      return MainResponse.error(error);
+    }
   });
 
   ipcMain.handle(Channel.GetProfiles, async () => {

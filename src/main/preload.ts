@@ -1,6 +1,7 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
 import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
-import Channel from './ipc/channel';
+import { Channel } from 'shared/ipc';
+import { BrowserStatusDto } from 'shared/models';
 
 const electronHandler = {
   api: {
@@ -9,6 +10,9 @@ const electronHandler = {
     launchProfile: (id: string) => ipcRenderer.invoke(Channel.LaunchProfile, id),
     getProfiles: () => ipcRenderer.invoke(Channel.GetProfiles),
     deleteProfile: (id: string) => ipcRenderer.invoke(Channel.DeleteProfile, id),
+    handleStatusChange: (
+      callback: (event: IpcRendererEvent, status: BrowserStatusDto) => void
+    ) => ipcRenderer.on(Channel.ProfileStatusChange, callback),
   },
 };
 

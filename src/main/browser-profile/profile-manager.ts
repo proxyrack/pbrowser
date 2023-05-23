@@ -1,16 +1,23 @@
 import { IStore } from 'main/state/istore';
 import Store from 'electron-store';
-import { BadRequestError } from 'shared/errors/bad-request-error';
-import { ErrorReason } from 'shared/errors/error-reason';
+import { ErrorReason, ProfileNotFoundError, BadRequestError } from 'shared/errors';
 import { randomUUID } from 'crypto';
 import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
-import { StoredBrowserProfile } from '../../shared/models/stored-browser-profile';
+import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
 
 export class ProfileManager {
   store: Store<IStore>;
 
   constructor(store: Store<IStore>) {
     this.store = store;
+  }
+
+  get(id: string) {
+    const allProfiles = this.getAll();
+    const profileIndex = allProfiles.findIndex((p) => p.id === id);
+    if (profileIndex === -1) throw new ProfileNotFoundError();
+
+    return allProfiles[profileIndex];
   }
 
   getAll() {
@@ -46,9 +53,7 @@ export class ProfileManager {
   edit(profile: ManageBrowserProfileDto) {
     const allProfiles = this.getAll();
     const profileIndex = allProfiles.findIndex((p) => p.id === profile.id);
-    if (profileIndex === -1) {
-      throw new BadRequestError('Profile not found', ErrorReason.NotFound, 'id');
-    }
+    if (profileIndex === -1) throw new ProfileNotFoundError();
 
     const notUnique = allProfiles.some(
       (p) => p.name === profile.general.name.trim() && p.id !== profile.id
@@ -77,9 +82,7 @@ export class ProfileManager {
   delete(id: string) {
     const allProfiles = this.getAll();
     const profileIndex = allProfiles.findIndex((p) => p.id === id);
-    if (profileIndex === -1) {
-      throw new BadRequestError('Profile not found', ErrorReason.NotFound, 'id');
-    }
+    if (profileIndex === -1) throw new ProfileNotFoundError();
 
     const removed = allProfiles.splice(profileIndex, 1);
     this.store.set('profiles', allProfiles);
