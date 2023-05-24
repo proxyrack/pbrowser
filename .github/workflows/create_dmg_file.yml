@@ -1,0 +1,66 @@
+name: Create_DMG_file
+
+on:
+  push:
+    branches:
+      - release*
+      - fix*
+
+jobs:
+  create_dmg_file:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest]
+        # os: [macos-11.0, macos-12, macos-latest]
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Node and NPM
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install
+        run: |
+          npm install
+
+      - name: Package
+        run: |
+          npm run package
+      - name: Ls directories
+        run: |
+          echo "ls -la"
+          ls -la
+          echo "ls -la release/"
+          ls -la release/
+          echo "ls -la release/build/"
+          ls -la release/build/
+          echo "ls -la release/build/mac-arm64"
+          ls -la release/build/mac-arm64/
+          echo "ls -la release/build/mac"
+          ls -la release/build/mac/
+          echo "ls -la release/app/"
+          ls -la release/app/
+
+      - name: get RELEASE_VERSION
+        run: |
+          echo "RELEASE_VERSION=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+
+      - name: Upload DMG file (arm64)
+        uses: actions/upload-artifact@v3
+        with:
+          name: PClient-${{ env.RELEASE_VERSION }}-${{ github.run_number }}-${{ matrix.os }}-arm64.dmg
+          path: release/build/PClient-arm64.dmg
+
+      - name: Upload DMG file (x64)
+        uses: actions/upload-artifact@v3
+        with:
+          name: PClient-${{ env.RELEASE_VERSION }}-${{ github.run_number }}-${{ matrix.os }}-x64.dmg
+          path: release/build/PClient-x64.dmg

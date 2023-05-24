@@ -171,7 +171,8 @@
   },
   "build": {
     "productName": "PClient",
-    "appId": "org.erb.PClient",
+    "appId": "com.Proxyrack.PClient",
+    "artifactName": "${productName}.${ext}",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -181,6 +182,7 @@
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
+      "artifactName": "${productName}-${arch}.${ext}",
       "target": {
         "target": "default",
         "arch": [

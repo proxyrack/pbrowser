@@ -1,0 +1,98 @@
+name: Create_DMG_file_using_master_tag
+# Use the tag for create a *.dmg file in the master branch
+# exmple:
+# git add .
+# git commit -m "Add your message for the commit"
+# git tag -a v1.0.17 -m "Add your annotation for v1.0.17"
+# git push origin master --tags
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  create_dmg_file_on_master_branch_using_tags:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest]
+        # os: [macos-11.0, macos-12, macos-latest]
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Echo branch
+        run: |
+          COMMIT_FOR_TAG=$(git rev-parse ${{ github.ref }}~0)
+          echo "COMMIT_FOR_TAG: $COMMIT_FOR_TAG"        
+          BRANCH_FOR_COMMIT=$(git branch -r --contains $COMMIT_FOR_TAG | sed 's/.* \([^ ]*\)$/\1/')      
+          TAG_BRANCH_MASTER="origin/master"
+      - name: Determine branch for tag
+        id: getbranch
+        run: |
+          if [ "$BRANCH_FOR_COMMIT" == "$TAG_BRANCH_MASTER" ]; then
+            echo "Tag is on master branch, proceeding with workflow."
+            echo "skip=false" >>$GITHUB_OUTPUT
+          else
+            echo "Tag is not on master branch."
+            echo "skip=true" >>$GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: steps.getbranch.outputs.skip
+        run: |
+          echo ${{ steps.getbranch.outputs.skip }}
+        
+      - name: Get latest tag
+        id: get-latest-tag
+        run: echo "RELEASE_VERSION=$(echo ${{ github.ref }} | sed 's/refs\/tags\/\([^/ ]*\).*/\1/')"  >> $GITHUB_ENV
+
+      - name: Install Node and NPM
+        if: steps.getbranch.outputs.skip == 'false'
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm   
+
+      - name: Install and package
+        if: steps.getbranch.outputs.skip == 'false'
+        run: |
+          npm install
+          npm run package
+
+      - name: Ls directories and envs
+        if: steps.getbranch.outputs.skip == 'false'      
+        run: |
+          echo "ls -la"
+          ls -la
+          echo "ls -la release/"
+          ls -la release/
+          echo "ls -la release/build/"
+          ls -la release/build/
+          echo "ls -la release/build/mac-arm64"
+          ls -la release/build/mac-arm64/
+          echo "ls -la release/build/mac"
+          ls -la release/build/mac/
+          echo "ls -la release/app/"
+          ls -la release/app/
+          echo "env.RELEASE_VERSION"
+          echo ${{ env.RELEASE_VERSION }}
+
+      - name: Upload DMG file (arm64)
+        if: steps.getbranch.outputs.skip == 'false'      
+        uses: actions/upload-artifact@v3
+        with:
+          name: PClient-${{ env.RELEASE_VERSION }}-${{ matrix.os }}-arm64.dmg
+          path: release/build/PClient-arm64.dmg
+
+      - name: Upload DMG file (x64)
+        if: steps.getbranch.outputs.skip == 'false'            
+        uses: actions/upload-artifact@v3
+        with:
+          name: PClient-${{ env.RELEASE_VERSION }}-${{ matrix.os }}-x64.dmg
+          path: release/build/PClient-x64.dmg
