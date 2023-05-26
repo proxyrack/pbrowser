@@ -3,19 +3,33 @@ import { FingerprintGenerator } from 'fingerprint-generator';
 import { ProfileManager } from 'main/browser-profile/profile-manager';
 import Store from 'electron-store';
 import path from 'path';
-import { orderBy } from 'lodash';
 import { ManageBrowserProfileDto, BrowserStatusDto, BrowserStatus } from 'shared/models';
 import { MainResponse, Channel } from 'shared/ipc';
 import { Chromium } from 'main/chromium';
+import { rmSync } from 'fs';
 import { IState } from '../state/istate';
 
 const startIpc = (state: IState): void => {
   const profileManager = new ProfileManager(state.store);
-  const mainWindowContents = state.mainWindow!.webContents;
+  const mainWindowWeb = state.mainWindow!.webContents;
+
+  const getProfileDir = (profileId: string) => {
+    return path.join(path.dirname(state.store.path), 'browser-profiles', profileId);
+  };
+
+  const deleteProfileDir = (profileId: string) => {
+    const browserProfilePath = getProfileDir(profileId);
+    rmSync(browserProfilePath, { recursive: true, force: true, maxRetries: 5 });
+  };
 
   const browserStatusChanged = (status: BrowserStatusDto) => {
-    mainWindowContents.send(Channel.ProfileStatusChange, status);
+    mainWindowWeb.send(Channel.ProfileStatusChange, status);
   };
+
+  ipcMain.handle(Channel.CloseApp, async () => {
+    state.appCloseConfirmed = true;
+    state.mainWindow?.close();
+  });
 
   ipcMain.handle(Channel.SaveProfile, async (event, profile: ManageBrowserProfileDto) => {
     let savedProfile = null;
@@ -33,7 +47,14 @@ const startIpc = (state: IState): void => {
   });
 
   ipcMain.handle(Channel.DeleteProfile, async (event, id: string) => {
+    if (state.activeBrowserWindows.has(id)) {
+      return MainResponse.error(
+        new Error('Profile is being used. Stop the session first')
+      );
+    }
+
     try {
+      deleteProfileDir(id);
       const removed = profileManager.delete(id);
       return MainResponse.success(removed);
     } catch (error: any) {
@@ -41,9 +62,16 @@ const startIpc = (state: IState): void => {
     }
   });
 
-  ipcMain.handle(Channel.LaunchProfile, async (event, id: string) => {
+  ipcMain.handle(Channel.StartBrowser, async (event, id: string) => {
+    if (state.activeBrowserWindows.has(id)) {
+      return MainResponse.error(
+        new Error('Browser with this profile is already running')
+      );
+    }
+
     try {
-      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Pending));
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.PendingActive));
+      profileManager.updateLaunchDate(id);
 
       const profile = profileManager.get(id);
       const generator = new FingerprintGenerator({
@@ -52,31 +80,47 @@ const startIpc = (state: IState): void => {
         devices: ['desktop'],
       });
       const fingerprintWHeaders = generator.getFingerprint();
-      const browserProfilePath = path.join(
-        path.dirname(state.store.path),
-        'browser-profiles',
-        id
-      );
+      const browserProfilePath = getProfileDir(id);
       const fingerprintStore = new Store({
         cwd: browserProfilePath,
         name: 'fingerprint',
       });
       fingerprintStore.set('fingerprint', fingerprintWHeaders.fingerprint);
 
-      const chromium = new Chromium(id, browserProfilePath);
-      chromium.start();
+      const instance = new Chromium(id, browserProfilePath);
+      state.activeBrowserWindows.set(id, instance);
+      instance.start();
 
-      chromium.process?.once('spawn', () => {
+      instance.process?.once('spawn', () => {
         browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Active));
       });
-      chromium.process?.once('close', (code) => {
-        // handle only normal close, other cases are handled on 'error'
-        if (code !== 0) return;
-        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Inactive));
+      instance.process?.once('close', (code) => {
+        state.activeBrowserWindows.delete(id);
+        // set Inactive status only if closed normally or killed, otherwise set Error
+        if (code === 0 || code === null) {
+          browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Inactive));
+        }
       });
-      chromium.process?.once('error', () => {
+      instance.process?.once('error', () => {
         browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
       });
+
+      return MainResponse.success();
+    } catch (error: any) {
+      state.activeBrowserWindows.delete(id);
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+      return MainResponse.error(error);
+    }
+  });
+
+  ipcMain.handle(Channel.StopBrowser, async (event, id: string) => {
+    if (!state.activeBrowserWindows.has(id))
+      return MainResponse.error(new Error('Browser with this profile is not running'));
+
+    try {
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.PendingInactive));
+      const instance = state.activeBrowserWindows.get(id);
+      instance?.kill();
 
       return MainResponse.success();
     } catch (error: any) {
@@ -87,13 +131,31 @@ const startIpc = (state: IState): void => {
 
   ipcMain.handle(Channel.GetProfiles, async () => {
     const allProfiles = profileManager.getAll();
-    const orderedProfiles = orderBy(
-      allProfiles,
-      [(p) => p.lastLaunchDate || '1970-01-01T00:00:00.000Z', (p) => p.name],
-      ['desc', 'asc']
-    );
 
-    return orderedProfiles;
+    return allProfiles;
+  });
+
+  ipcMain.handle(Channel.GetActiveBrowserWindows, async () => {
+    return Array.from(state.activeBrowserWindows.keys()).map((id) => ({
+      profileId: id,
+      status: BrowserStatus.Active,
+    }));
+  });
+
+  ipcMain.handle(Channel.DeleteSession, async (event, profileId: string) => {
+    if (state.activeBrowserWindows.has(profileId)) {
+      return MainResponse.error(
+        new Error('Profile is being used. Stop the session first')
+      );
+    }
+
+    try {
+      deleteProfileDir(profileId);
+
+      return MainResponse.success();
+    } catch (error: any) {
+      return MainResponse.error(error);
+    }
   });
 };
 

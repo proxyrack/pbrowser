@@ -1,7 +1,8 @@
 export enum BrowserStatus {
   Active = 'ACTIVE',
+  PendingActive = 'PENDING_ACTIVE',
   Inactive = 'INACTIVE',
-  Pending = 'PENDING',
+  PendingInactive = 'PENDING_INACTIVE',
   Error = 'ERROR',
 }
 

@@ -9,7 +9,7 @@ import { confirm } from 'renderer/components/ui/confirm-dialog';
 import { observer } from 'mobx-react-lite';
 import PageTitle from 'renderer/components/ui/page-title';
 import { useNavigate } from 'react-router-dom';
-import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
+import { StoredBrowserProfile, BrowserStatus } from 'shared/models';
 import * as S from './styles';
 
 const ConfirmDeletionMsg = ({ name }: { name: string }) => (
@@ -20,16 +20,25 @@ const ConfirmDeletionMsg = ({ name }: { name: string }) => (
 );
 
 const ProfilesListPage = observer(() => {
-  const { profiles, startEditing, fetchProfiles, deleteProfile } = useStore();
+  const {
+    profiles,
+    startEditing,
+    fetchProfiles,
+    fetchStatuses,
+    deleteProfile,
+    startBrowser,
+    stopBrowser,
+    deleteSession,
+  } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const launchProfile = async (id: string) => {
-    await window.electron.api.launchProfile(id);
-  };
+  useEffect(() => {
+    fetchStatuses();
+  }, [fetchStatuses]);
 
   const handleEdit = (id: string) => {
     startEditing(id);
@@ -40,6 +49,17 @@ const ProfilesListPage = observer(() => {
     const confirmed = await confirm(<ConfirmDeletionMsg name={profile.name} />);
     if (confirmed) {
       deleteProfile(profile.id!);
+    }
+  };
+
+  const handleSessionDelete = async (id: string, name: string) => {
+    const confirmed = await confirm(
+      <span>
+        Are you sure you want to delete the <strong>{name}</strong> session data
+      </span>
+    );
+    if (confirmed) {
+      deleteSession(id);
     }
   };
 
@@ -64,20 +84,36 @@ const ProfilesListPage = observer(() => {
                 <td className="break-word">
                   <CollapsibleParagraph text={profile.description} />
                 </td>
-                <td />
+                <td>{profile.status}</td>
                 <td>
                   <RelativeDate datetime={profile.lastLaunchDate} />
                 </td>
                 <td>
                   <S.Actions>
-                    <Button
-                      type="button"
-                      color="primary"
-                      size="s"
-                      onClick={() => launchProfile(profile.id!)}
-                    >
-                      Start
-                    </Button>
+                    {(profile.status === BrowserStatus.Inactive ||
+                      profile.status === BrowserStatus.PendingActive) && (
+                      <Button
+                        type="button"
+                        color="primary"
+                        size="s"
+                        disabled={profile.status === BrowserStatus.PendingActive}
+                        onClick={() => startBrowser(profile.id!)}
+                      >
+                        Start
+                      </Button>
+                    )}
+                    {(profile.status === BrowserStatus.Active ||
+                      profile.status === BrowserStatus.PendingInactive) && (
+                      <Button
+                        type="button"
+                        color="danger"
+                        size="s"
+                        disabled={profile.status === BrowserStatus.PendingInactive}
+                        onClick={() => stopBrowser(profile.id!)}
+                      >
+                        Stop
+                      </Button>
+                    )}
                     <Dropdown
                       position="left"
                       trigger={
@@ -91,6 +127,12 @@ const ProfilesListPage = observer(() => {
                         </button>,
                         <button type="button" onClick={() => handleDelete(profile)}>
                           Delete Profile
+                        </button>,
+                        <button
+                          type="button"
+                          onClick={() => handleSessionDelete(profile.id!, profile.name)}
+                        >
+                          Delete Sessions Data
                         </button>,
                       ]}
                     />

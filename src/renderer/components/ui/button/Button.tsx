@@ -8,6 +8,7 @@ type ButtonProps = {
   children: string | JSX.Element;
   size?: 's' | 'm';
   className?: string;
+  disabled?: boolean;
   onClick?: () => void;
 };
 
@@ -18,6 +19,7 @@ const Button = ({
   children,
   size = 'm',
   className,
+  disabled,
   onClick,
 }: ButtonProps): JSX.Element => {
   return (
@@ -27,6 +29,7 @@ const Button = ({
       fullWidth={fullWidth}
       size={size}
       className={className}
+      disabled={disabled}
       onClick={onClick}
     >
       {children}

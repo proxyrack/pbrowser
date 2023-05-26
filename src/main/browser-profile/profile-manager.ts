@@ -1,39 +1,53 @@
 import { IStore } from 'main/state/istore';
 import Store from 'electron-store';
-import { ErrorReason, ProfileNotFoundError, BadRequestError } from 'shared/errors';
+import {
+  ErrorReason,
+  ProfileNotFoundError,
+  BadRequestError,
+  ProfileNameNotUniqueError,
+} from 'shared/errors';
 import { randomUUID } from 'crypto';
-import { ManageBrowserProfileDto } from 'shared/models/renderer-data-schema';
-import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
+import { ManageBrowserProfileDto, StoredBrowserProfile } from 'shared/models';
 
 export class ProfileManager {
-  store: Store<IStore>;
+  private store: Store<IStore>;
+  private profiles: Array<StoredBrowserProfile> | null;
 
   constructor(store: Store<IStore>) {
     this.store = store;
+    this.profiles = null;
   }
 
-  get(id: string) {
-    const allProfiles = this.getAll();
-    const profileIndex = allProfiles.findIndex((p) => p.id === id);
-    if (profileIndex === -1) throw new ProfileNotFoundError();
-
-    return allProfiles[profileIndex];
+  private get allProfiles() {
+    return this.profiles === null ? this.fetchAll() : this.profiles;
   }
 
-  getAll() {
+  private set allProfiles(profiles: Array<StoredBrowserProfile>) {
+    this.store.set('profiles', profiles);
+    this.profiles = this.fetchAll();
+  }
+
+  private fetchAll() {
     return this.store.get('profiles') || [];
   }
 
+  get(id: string | null) {
+    if (id === null)
+      throw new BadRequestError('Id is null', ErrorReason.NotSpecified, 'id');
+
+    const profileIndex = this.allProfiles.findIndex((p) => p.id === id);
+    if (profileIndex === -1) throw new ProfileNotFoundError();
+
+    return this.allProfiles[profileIndex];
+  }
+
+  getAll() {
+    return this.allProfiles;
+  }
+
   create(profile: ManageBrowserProfileDto) {
-    const allProfiles = this.getAll();
-    const notUnique = allProfiles.some((p) => p.name === profile.general.name.trim());
-    if (notUnique) {
-      throw new BadRequestError(
-        'Profile name should be unique',
-        ErrorReason.NotUnique,
-        'name'
-      );
-    }
+    const notUnique = this.allProfiles.some((p) => p.name === profile.general.name.trim());
+    if (notUnique) throw new ProfileNameNotUniqueError();
 
     const newProfile: StoredBrowserProfile = {
       id: randomUUID(),
@@ -44,49 +58,48 @@ export class ProfileManager {
       fillBasedOnExternalIp: profile.general.fillBasedOnExternalIp,
       lastEditDate: new Date().toISOString(),
     };
+    this.allProfiles = [...this.allProfiles, newProfile];
 
-    allProfiles.push(newProfile);
-    this.store.set('profiles', allProfiles);
     return newProfile;
   }
 
   edit(profile: ManageBrowserProfileDto) {
-    const allProfiles = this.getAll();
-    const profileIndex = allProfiles.findIndex((p) => p.id === profile.id);
-    if (profileIndex === -1) throw new ProfileNotFoundError();
-
-    const notUnique = allProfiles.some(
+    const existingProfile = this.get(profile.id);
+    const notUnique = this.allProfiles.some(
       (p) => p.name === profile.general.name.trim() && p.id !== profile.id
     );
-    if (notUnique) {
-      throw new BadRequestError(
-        'Profile name should be unique',
-        ErrorReason.NotUnique,
-        'name'
-      );
-    }
+    if (notUnique) throw new ProfileNameNotUniqueError();
 
     const newProfile: StoredBrowserProfile = {
-      ...allProfiles[profileIndex],
+      ...existingProfile,
       name: profile.general.name.trim(),
       description: profile.general.description,
       fillBasedOnExternalIp: profile.general.fillBasedOnExternalIp,
       lastEditDate: new Date().toISOString(),
     };
+    this.allProfiles = this.allProfiles.map((p) => {
+      if (p.id === newProfile.id) return newProfile;
 
-    allProfiles.splice(profileIndex, 1, newProfile);
-    this.store.set('profiles', allProfiles);
+      return p;
+    });
+
     return newProfile;
   }
 
   delete(id: string) {
-    const allProfiles = this.getAll();
-    const profileIndex = allProfiles.findIndex((p) => p.id === id);
-    if (profileIndex === -1) throw new ProfileNotFoundError();
+    const profile = this.get(id);
+    this.allProfiles = this.allProfiles.filter((p) => p.id !== id);
 
-    const removed = allProfiles.splice(profileIndex, 1);
-    this.store.set('profiles', allProfiles);
+    return profile;
+  }
 
-    return removed.pop();
+  updateLaunchDate(id: string) {
+    this.allProfiles = this.allProfiles.map((p) => {
+      if (p.id === id) {
+        return { ...p, lastLaunchDate: new Date().toISOString() };
+      }
+
+      return p;
+    });
   }
 }
