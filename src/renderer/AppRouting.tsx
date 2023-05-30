@@ -20,10 +20,16 @@ const AppRouting = () => {
           <Route path="/profiles/new">
             <Route index path="overview" element={<OverviewPage />} />
             <Route path="proxy" element={<CommingSoon />} />
+            <Route path="timezone" element={<CommingSoon />} />
+            <Route path="webrtc" element={<CommingSoon />} />
+            <Route path="geolocation" element={<CommingSoon />} />
           </Route>
           <Route path="/profiles/:id/edit">
             <Route index path="overview" element={<OverviewPage />} />
             <Route path="proxy" element={<CommingSoon />} />
+            <Route path="timezone" element={<CommingSoon />} />
+            <Route path="webrtc" element={<CommingSoon />} />
+            <Route path="geolocation" element={<CommingSoon />} />
           </Route>
         </Route>
       </Routes>
