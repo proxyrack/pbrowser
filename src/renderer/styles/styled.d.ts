@@ -19,7 +19,9 @@ declare module 'styled-components' {
   export interface DefaultTheme {
     colors: DefaultThemeColors;
     transitions: {
-      default: string;
+      defaultProperty: string;
+      defaultDuration: string;
+      defaultFunction: string;
     };
   }
 }

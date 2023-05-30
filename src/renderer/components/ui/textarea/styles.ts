@@ -5,6 +5,7 @@ export const Textarea = styled.textarea`
   ${inputBaseCss};
   ${formControlBaseCss};
   width: 100%;
+  min-height: 2.375rem;
   max-height: 6rem;
   resize: vertical;
 `;

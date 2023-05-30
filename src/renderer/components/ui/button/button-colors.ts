@@ -4,6 +4,7 @@ export type ButtonColors = {
   secondary: string;
   invert: string;
   danger: string;
+  outlined: string;
 };
 
 export type ButtonColor = keyof ButtonColors;

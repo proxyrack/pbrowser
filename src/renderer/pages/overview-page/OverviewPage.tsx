@@ -115,15 +115,18 @@ const OverviewPage = observer(() => {
   return (
     <>
       <PageTitle>Overview</PageTitle>
-      <CollapsibleAlert
-        expandedText={
-          <>
-            {PROFILE_CREATION_INFO.EXPANDED_P1} <br /> {PROFILE_CREATION_INFO.EXPANDED_P2}
-          </>
-        }
-        collapsedText={PROFILE_CREATION_INFO.COLLAPSED}
-        collapsedInitially={false}
-      />
+      {!profileIsEdited && (
+        <CollapsibleAlert
+          expandedText={
+            <>
+              {PROFILE_CREATION_INFO.EXPANDED_P1} <br />
+              {PROFILE_CREATION_INFO.EXPANDED_P2}
+            </>
+          }
+          collapsedText={PROFILE_CREATION_INFO.COLLAPSED}
+          collapsedInitially={false}
+        />
+      )}
       <S.Spacer height="2rem" />
       <Form<GeneralSettings>
         schema={generalSettingsSchema}
@@ -136,13 +139,13 @@ const OverviewPage = observer(() => {
         <>
           <S.Row>
             <div>
-              <Label htmlFor="ov-profile-name">Browser profile name*:</Label>
+              <Label htmlFor="ov-profile-name">Browser Profile Name</Label>
               <Input
                 id="ov-profile-name"
                 name="name"
                 maxlength={64}
                 type="text"
-                placeholder="Browser profile name"
+                placeholder="Enter profile name"
                 fullWidth
               />
               <FormError name="name" />
@@ -150,7 +153,7 @@ const OverviewPage = observer(() => {
           </S.Row>
           <S.Divider />
 
-          <Label htmlFor="ov-description">Description:</Label>
+          <Label htmlFor="ov-description">Description</Label>
           <Textarea
             id="ov-description"
             name="description"
@@ -160,23 +163,23 @@ const OverviewPage = observer(() => {
           <FormError name="description" />
           <S.Divider />
 
-          <Label>Operating system:</Label>
+          <Label>Operating System</Label>
           <ToggleButtonsGroup name="os" options={OSS} />
           <FormError name="os" />
           <S.Divider />
 
-          <Label>Browser:</Label>
+          <Label>Browser</Label>
           <ToggleButtonsGroup name="browser" options={BROWSERS} />
           <FormError name="browser" />
           <S.Divider />
 
-          <Label>Proxy Settings:</Label>
+          <Label>Proxy Settings</Label>
           <Button color="primary" onClick={handleProxyEdit}>
-            Edit Proxy settings
+            Edit Proxy Settings
           </Button>
           <S.Divider />
 
-          <Label htmlFor="ov-fill-based-on-ip">Timezone, WebRTC, Geolocation:</Label>
+          <Label htmlFor="ov-fill-based-on-ip">Timezone, WebRTC, Geolocation</Label>
           <Switch id="ov-fill-based-on-ip" name="fillBasedOnExternalIp">
             Fill Timezone, WebRTC, and Geolocation fingerprints based on the external IP
           </Switch>
@@ -186,7 +189,7 @@ const OverviewPage = observer(() => {
           </S.Card>
           <S.Spacer height="1rem" />
           <Button color="primary" onClick={handleGetNewFingerprint}>
-            Get new fingerprint
+            Get New Fingerprint
           </Button>
           <S.Divider />
 
@@ -194,8 +197,11 @@ const OverviewPage = observer(() => {
             <Button type="button" color="secondary" onClick={handleCancel}>
               Cancel
             </Button>
+            <Button type="button" color="outlined">
+              Advanced Settings
+            </Button>
             <Button type="submit" color="primary">
-              Create Basic Profile
+              {profileIsEdited ? 'Save Profile' : 'Create Basic Profile'}
             </Button>
           </S.Actions>
         </>

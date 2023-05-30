@@ -12,6 +12,13 @@ import { useNavigate } from 'react-router-dom';
 import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
 import * as S from './styles';
 
+const ConfirmDeletionMsg = ({ name }: { name: string }) => (
+  <>
+    Are you sure you want to delete the <strong>{name}</strong>
+    &nbsp;browser profile?
+  </>
+);
+
 const ProfilesListPage = observer(() => {
   const { profiles, startEditing, fetchProfiles, deleteProfile } = useStore();
   const navigate = useNavigate();
@@ -30,13 +37,7 @@ const ProfilesListPage = observer(() => {
   };
 
   const handleDelete = async (profile: StoredBrowserProfile) => {
-    const confirmed = await confirm(
-      `Are you sure you want to delete the ${profile.name} browser profile?`,
-      {
-        ok: { label: 'Yes', color: 'danger' },
-        cancel: { label: 'No', color: 'secondary' },
-      }
-    );
+    const confirmed = await confirm(<ConfirmDeletionMsg name={profile.name} />);
     if (confirmed) {
       deleteProfile(profile.id!);
     }
@@ -44,23 +45,23 @@ const ProfilesListPage = observer(() => {
 
   return (
     <>
-      <PageTitle>Browser profile list</PageTitle>
+      <PageTitle>Browser Profile List</PageTitle>
       <S.Card>
         <S.Table>
           <thead>
             <tr>
-              <th>Name</th>
+              <th className="name-col">Name</th>
               <th className="description-col">Description</th>
               <th>Status</th>
-              <th>Last launched</th>
+              <th className="last-launch-col">Last Launch</th>
               <th className="actions-col">&nbsp;</th>
             </tr>
           </thead>
           <tbody>
             {profiles.map((profile) => (
               <tr key={profile.id}>
-                <td>{profile.name}</td>
-                <td>
+                <td className="break-word">{profile.name}</td>
+                <td className="break-word">
                   <CollapsibleParagraph text={profile.description} />
                 </td>
                 <td />
@@ -91,7 +92,6 @@ const ProfilesListPage = observer(() => {
                         <button type="button" onClick={() => handleDelete(profile)}>
                           Delete Profile
                         </button>,
-                        <button type="button">Profile Summary</button>,
                       ]}
                     />
                   </S.Actions>

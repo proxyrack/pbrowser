@@ -45,7 +45,7 @@ const ToastContainerStyled = styled(WrappedToastContainer)`
 
   .Toastify__toast-theme--colored.Toastify__toast--success {
     border: 1px solid ${({ theme }) => theme.colors.success};
-    background: #e6feeccc;
+    background: #e6feec;
     padding: 1rem;
   }
 
@@ -55,7 +55,7 @@ const ToastContainerStyled = styled(WrappedToastContainer)`
 
   .Toastify__toast-theme--colored.Toastify__toast--error {
     border: 1px solid ${({ theme }) => theme.colors.dangerLighter};
-    background: #fee6e6cc;
+    background: #fee6e6;
     padding: 1rem;
   }
 
@@ -65,7 +65,7 @@ const ToastContainerStyled = styled(WrappedToastContainer)`
 
   .Toastify__toast-theme--colored.Toastify__toast--info {
     border: 1px solid ${({ theme }) => theme.colors.primary};
-    background: #eae6fecc;
+    background: #eae6fe;
     padding: 1rem;
   }
 

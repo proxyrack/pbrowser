@@ -4,16 +4,15 @@ import { z } from 'zod';
 export const generalSettingsSchema = z.object({
   name: z
     .string()
-    .trim()
     .nonempty('The profile name is required.')
     .max(64)
     .regex(
       /^[\w\-\s()]+$/,
-      'Only the Latin alphabet letters, numbers and the following special characters allowed: ( ) _ -.'
+      'Only the Latin alphabet letters, numbers and the following special characters allowed: ( ) _ -'
     ),
   description: z.string().max(1000),
-  os: z.enum(['macos'], { invalid_type_error: 'An operating system is not selected.' }),
-  browser: z.enum(['chrome'], { invalid_type_error: 'A browser type is not selected.' }),
+  os: z.enum(['macos'], { invalid_type_error: 'Please select an operating system.' }),
+  browser: z.enum(['chrome'], { invalid_type_error: 'Please select a browser profile.' }),
   fillBasedOnExternalIp: z.boolean(),
 });
 

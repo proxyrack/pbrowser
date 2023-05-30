@@ -52,7 +52,9 @@ export const MenuLink = styled(NavLink)`
   font-size: 1rem;
   text-decoration: none;
   border-radius: 8px;
-  transition: ${({ theme }) => theme.transitions.default};
+  transition-property: ${({ theme }) => theme.transitions.defaultProperty};
+  transition-duration: ${({ theme }) => theme.transitions.defaultDuration};
+  transition-timing-function: ${({ theme }) => theme.transitions.defaultFunction};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.asideItemActive};

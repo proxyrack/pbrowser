@@ -4,10 +4,12 @@ import ManageProfileLayout from './layouts/manage-profile-layout';
 import CommingSoon from './pages/comming-soon';
 import OverviewPage from './pages/overview-page';
 import ProfilesListPage from './pages/profiles-list-page';
+import ScrollToTop from './components/ui/scroll-to-top';
 
 const AppRouting = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route element={<AppLayout />}>
           <Route index path="/" element={<ProfilesListPage />} />

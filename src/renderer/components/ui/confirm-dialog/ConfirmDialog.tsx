@@ -94,10 +94,10 @@ const createConfirmation = createConfirmationCreater(mounter);
 const confirmationCreator = createConfirmation<any, boolean>(ConfirmDialog);
 
 export const confirm = (
-  confirmation: string,
+  confirmation: string | JSX.Element,
   buttons: DialogButtonsOptions = {
-    ok: { label: 'Ok', color: 'danger' },
-    cancel: { label: 'Cancel', color: 'secondary' },
+    ok: { label: 'Yes', color: 'danger' },
+    cancel: { label: 'No', color: 'secondary' },
   }
 ) => {
   return confirmationCreator({ confirmation, buttons });

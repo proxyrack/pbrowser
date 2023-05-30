@@ -7,6 +7,7 @@ const backgroudColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'secondary',
   invert: 'backgroundMain',
   danger: 'dangerLighter',
+  outlined: 'backgroundMain',
 };
 const fontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'fontLight',
@@ -14,6 +15,7 @@ const fontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'fontSecondary',
   invert: 'primaryLighter',
   danger: 'fontLight',
+  outlined: 'primary',
 };
 const hoverBackgroudColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'primaryLight',
@@ -21,6 +23,7 @@ const hoverBackgroudColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'primary',
   invert: 'secondary',
   danger: 'danger',
+  outlined: 'primaryLight',
 };
 const hoverFontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'fontLight',
@@ -28,6 +31,7 @@ const hoverFontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'fontLight',
   invert: 'primaryLight',
   danger: 'fontLight',
+  outlined: 'fontLight',
 };
 const activeBackgroundColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'primary',
@@ -35,6 +39,7 @@ const activeBackgroundColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'primary',
   invert: 'primary',
   danger: 'danger',
+  outlined: 'primary',
 };
 const disabledBackgroundColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'disabledDark',
@@ -42,6 +47,7 @@ const disabledBackgroundColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'disabledDark',
   invert: 'secondary',
   danger: 'disabledDark',
+  outlined: 'backgroundMain',
 };
 const disabledFontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   primary: 'fontLight',
@@ -49,6 +55,7 @@ const disabledFontColor: Record<ButtonColor, keyof DefaultThemeColors> = {
   secondary: 'fontLight',
   invert: 'disabledDark',
   danger: 'fontLight',
+  outlined: 'disabledDark',
 };
 
 export const Button = styled.button.attrs((props) => ({ type: props.type }))<{
@@ -58,14 +65,18 @@ export const Button = styled.button.attrs((props) => ({ type: props.type }))<{
 }>`
   font-size: 0.875rem;
   font-weight: 700;
-  border-style: none;
+  border-style: ${({ color }) => (color === 'outlined' ? 'solid' : 'unset')};
+  border-width: 1px;
+  border-color: inherit;
   border-radius: 4px;
   ${({ size }) => size === 'm' && 'padding: 0.625rem 2rem'};
   ${({ size }) => size === 's' && 'padding: 0.5rem 1.5rem'};
   ${(props) => props.fullWidth && `width: 100%`};
   color: ${({ theme, color }) => theme.colors[fontColor[color]]};
   background-color: ${({ theme, color }) => theme.colors[backgroudColor[color]]};
-  transition: ${({ theme }) => theme.transitions.default};
+  transition-property: ${({ theme }) => theme.transitions.defaultProperty};
+  transition-duration: ${({ theme }) => theme.transitions.defaultDuration};
+  transition-timing-function: ${({ theme }) => theme.transitions.defaultFunction};
 
   &:not(:disabled) {
     cursor: pointer;

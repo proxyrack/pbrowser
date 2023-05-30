@@ -6,7 +6,9 @@ export const formControlBaseCss = css`
   border: 1px solid #dee0e6;
   font-size: 0.875rem;
   color: ${({ theme }) => theme.colors.fontDark};
-  transition: ${({ theme }) => theme.transitions.default};
+  transition-property: ${({ theme }) => theme.transitions.defaultProperty};
+  transition-duration: ${({ theme }) => theme.transitions.defaultDuration};
+  transition-timing-function: ${({ theme }) => theme.transitions.defaultFunction};
 `;
 
 export const inputBaseCss = css`

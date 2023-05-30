@@ -19,7 +19,7 @@ export class ProfileManager {
 
   create(profile: ManageBrowserProfileDto) {
     const allProfiles = this.getAll();
-    const notUnique = allProfiles.some((p) => p.name === profile.general.name);
+    const notUnique = allProfiles.some((p) => p.name === profile.general.name.trim());
     if (notUnique) {
       throw new BadRequestError(
         'Profile name should be unique',
@@ -30,7 +30,7 @@ export class ProfileManager {
 
     const newProfile: StoredBrowserProfile = {
       id: randomUUID(),
-      name: profile.general.name,
+      name: profile.general.name.trim(),
       description: profile.general.description,
       os: profile.general.os,
       browser: profile.general.browser,
@@ -51,7 +51,7 @@ export class ProfileManager {
     }
 
     const notUnique = allProfiles.some(
-      (p) => p.name === profile.general.name && p.id !== profile.id
+      (p) => p.name === profile.general.name.trim() && p.id !== profile.id
     );
     if (notUnique) {
       throw new BadRequestError(
@@ -63,7 +63,7 @@ export class ProfileManager {
 
     const newProfile: StoredBrowserProfile = {
       ...allProfiles[profileIndex],
-      name: profile.general.name,
+      name: profile.general.name.trim(),
       description: profile.general.description,
       fillBasedOnExternalIp: profile.general.fillBasedOnExternalIp,
       lastEditDate: new Date().toISOString(),

@@ -30,7 +30,9 @@ export const CloseButton = styled.button`
   background: none;
   padding: 0;
   color: ${({ theme }) => theme.colors.fontSecondary};
-  transition: ${({ theme }) => theme.transitions.default};
+  transition-property: ${({ theme }) => theme.transitions.defaultProperty};
+  transition-duration: ${({ theme }) => theme.transitions.defaultDuration};
+  transition-timing-function: ${({ theme }) => theme.transitions.defaultFunction};
 
   &:hover {
     cursor: pointer;
@@ -72,4 +74,6 @@ export const Icon = styled.div`
   }
 `;
 
-export const Message = styled.div``;
+export const Message = styled.div`
+  word-break: break-word;
+`;

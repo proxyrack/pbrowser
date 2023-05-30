@@ -20,7 +20,16 @@ export const Table = styled.table`
     width: 140px;
   }
   & .description-col {
+    width: 40%;
+  }
+  & .last-launch-col {
+    white-space: nowrap;
+  }
+  & .name-col {
     width: 30%;
+  }
+  & .break-word {
+    word-break: break-word;
   }
 `;
 
