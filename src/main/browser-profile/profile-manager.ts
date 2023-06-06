@@ -46,7 +46,9 @@ export class ProfileManager {
   }
 
   create(profile: ManageBrowserProfileDto) {
-    const notUnique = this.allProfiles.some((p) => p.name === profile.general.name.trim());
+    const notUnique = this.allProfiles.some(
+      (p) => p.name === profile.general.name.trim()
+    );
     if (notUnique) throw new ProfileNameNotUniqueError();
 
     const newProfile: StoredBrowserProfile = {
