@@ -10,6 +10,7 @@ import { observer } from 'mobx-react-lite';
 import PageTitle from 'renderer/components/ui/page-title';
 import { useNavigate } from 'react-router-dom';
 import { StoredBrowserProfile, BrowserStatus } from 'shared/models';
+import StatusLabel from 'renderer/components/status-label';
 import * as S from './styles';
 
 const ConfirmDeletionMsg = ({ name }: { name: string }) => (
@@ -72,7 +73,7 @@ const ProfilesListPage = observer(() => {
             <tr>
               <th className="name-col">Name</th>
               <th className="description-col">Description</th>
-              <th>Status</th>
+              <th className="status-col">Status</th>
               <th className="last-launch-col">Last Launch</th>
               <th className="actions-col">&nbsp;</th>
             </tr>
@@ -84,14 +85,17 @@ const ProfilesListPage = observer(() => {
                 <td className="break-word">
                   <CollapsibleParagraph text={profile.description} />
                 </td>
-                <td>{profile.status}</td>
+                <td>
+                  <StatusLabel status={profile.status} />
+                </td>
                 <td>
                   <RelativeDate datetime={profile.lastLaunchDate} />
                 </td>
                 <td>
                   <S.Actions>
                     {(profile.status === BrowserStatus.Inactive ||
-                      profile.status === BrowserStatus.PendingActive) && (
+                      profile.status === BrowserStatus.PendingActive ||
+                      profile.status === BrowserStatus.StartError) && (
                       <Button
                         type="button"
                         color="primary"
@@ -103,7 +107,8 @@ const ProfilesListPage = observer(() => {
                       </Button>
                     )}
                     {(profile.status === BrowserStatus.Active ||
-                      profile.status === BrowserStatus.PendingInactive) && (
+                      profile.status === BrowserStatus.PendingInactive ||
+                      profile.status === BrowserStatus.StopError) && (
                       <Button
                         type="button"
                         color="danger"
@@ -122,14 +127,23 @@ const ProfilesListPage = observer(() => {
                         </S.MoreButton>
                       }
                       menu={[
-                        <button type="button" onClick={() => handleEdit(profile.id!)}>
+                        <button
+                          type="button"
+                          disabled={profile.status !== BrowserStatus.Inactive}
+                          onClick={() => handleEdit(profile.id!)}
+                        >
                           Edit Profile
                         </button>,
-                        <button type="button" onClick={() => handleDelete(profile)}>
+                        <button
+                          type="button"
+                          disabled={profile.status !== BrowserStatus.Inactive}
+                          onClick={() => handleDelete(profile)}
+                        >
                           Delete Profile
                         </button>,
                         <button
                           type="button"
+                          disabled={profile.status !== BrowserStatus.Inactive}
                           onClick={() => handleSessionDelete(profile.id!, profile.name)}
                         >
                           Delete Sessions Data

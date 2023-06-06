@@ -1,7 +1,10 @@
 import { ChildProcess, spawn } from 'child_process';
 import { closeSync, openSync } from 'fs';
 
-const CHROMIUM_PATH = 'C:\\chromium\\chrome.exe';
+const CHROMIUM_PATH =
+  process.platform === 'darwin'
+    ? '/Applications/Chromium.app/Contents/MacOS/Chromium'
+    : 'C:\\chromium\\chrome.exe';
 const STARTING_URL = 'http://ip-api.com/json/';
 
 export class Chromium {

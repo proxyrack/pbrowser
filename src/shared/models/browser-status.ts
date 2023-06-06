@@ -3,7 +3,8 @@ export enum BrowserStatus {
   PendingActive = 'PENDING_ACTIVE',
   Inactive = 'INACTIVE',
   PendingInactive = 'PENDING_INACTIVE',
-  Error = 'ERROR',
+  StartError = 'START_ERROR',
+  StopError = 'STOP_ERROR',
 }
 
 export class BrowserStatusDto {

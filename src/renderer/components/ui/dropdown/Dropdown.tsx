@@ -1,6 +1,10 @@
-import { ReactElement, cloneElement, useState } from 'react';
+import { ReactElement, cloneElement, useCallback, useEffect, useState } from 'react';
 import useOutsideClick from 'renderer/hooks/use-outside-click';
 import * as S from './styles';
+
+const MAX_MENU_HEIGHT = 200;
+const AVG_OPTION_HEIGHT = 34;
+const MENU_PADDINGS = 8;
 
 type DropdownProps = {
   trigger: ReactElement;
@@ -20,6 +24,24 @@ const Dropdown = ({ trigger, menu, position = 'right' }: DropdownProps) => {
   const handleOpen = () => {
     setOpen(!open);
   };
+
+  const determineDropUp = useCallback(() => {
+    if (!ref.current) return;
+
+    const menuHeight = Math.min(
+      MAX_MENU_HEIGHT,
+      menu.length * AVG_OPTION_HEIGHT + MENU_PADDINGS
+    );
+    const instOffsetWithMenu = ref.current.getBoundingClientRect().top + menuHeight;
+    const dropUp = instOffsetWithMenu >= window.innerHeight;
+
+    if (dropUp) ref.current.classList.add('drop-up');
+    else ref.current.classList.remove('drop-up');
+  }, [ref, menu.length]);
+
+  useEffect(() => {
+    determineDropUp();
+  }, [open, determineDropUp]);
 
   return (
     <S.Dropdown>

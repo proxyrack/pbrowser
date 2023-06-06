@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron';
-import { FingerprintGenerator } from 'fingerprint-generator';
 import { ProfileManager } from 'main/browser-profile/profile-manager';
 import Store from 'electron-store';
 import path from 'path';
@@ -74,18 +73,12 @@ const startIpc = (state: IState): void => {
       profileManager.updateLaunchDate(id);
 
       const profile = profileManager.get(id);
-      const generator = new FingerprintGenerator({
-        operatingSystems: [profile.os],
-        browsers: ['chrome'],
-        devices: ['desktop'],
-      });
-      const fingerprintWHeaders = generator.getFingerprint();
       const browserProfilePath = getProfileDir(id);
       const fingerprintStore = new Store({
         cwd: browserProfilePath,
         name: 'fingerprint',
       });
-      fingerprintStore.set('fingerprint', fingerprintWHeaders.fingerprint);
+      fingerprintStore.set('fingerprint', profile);
 
       const instance = new Chromium(id, browserProfilePath);
       state.activeBrowserWindows.set(id, instance);
@@ -102,13 +95,13 @@ const startIpc = (state: IState): void => {
         }
       });
       instance.process?.once('error', () => {
-        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.StartError));
       });
 
       return MainResponse.success();
     } catch (error: any) {
       state.activeBrowserWindows.delete(id);
-      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.StartError));
       return MainResponse.error(error);
     }
   });
@@ -124,7 +117,7 @@ const startIpc = (state: IState): void => {
 
       return MainResponse.success();
     } catch (error: any) {
-      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Error));
+      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.StopError));
       return MainResponse.error(error);
     }
   });

@@ -96,7 +96,9 @@ class Store {
       toast.success(`The ${response.data?.name} profile is successfully deleted.`);
       await this.fetchProfiles(true);
     } else {
-      toast.error('Error occurred during the attempt to delete profile.');
+      toast.error(
+        'Something went wrong and the browser profile cannot be deleted. Please try again later.'
+      );
     }
   }
 
@@ -149,6 +151,15 @@ class Store {
 
   updateStatus(status: BrowserStatusDto) {
     this.statuses.set(status.profileId, status);
+    if (status.status === BrowserStatus.StartError) {
+      toast.error(
+        'Something went wrong and the browser profile cannot be launched. Please try again later or select another profile.'
+      );
+    } else if (status.status === BrowserStatus.StopError) {
+      toast.error(
+        'Something went wrong and the browser profile cannot be stopped. Please close the corresponding browser window or try again later.'
+      );
+    }
   }
 
   async confirmAppClose() {

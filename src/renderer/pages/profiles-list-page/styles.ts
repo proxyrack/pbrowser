@@ -19,6 +19,9 @@ export const Table = styled.table`
   & .actions-col {
     width: 140px;
   }
+  & .status-col {
+    width: 70px;
+  }
   & .description-col {
     width: 40%;
   }
