@@ -1,32 +1,30 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
+import { ModalProvider } from 'styled-react-modal';
 import IPCConnect from './ipc/IpcConnect';
-
-// Pages
-import Main from './pages/main';
+import { MountPoint, FadingBackground } from './components/ui/confirm-dialog';
 
 // styles
 import GlobalStyles from './styles/globalStyles';
 import theme from './styles/theme';
+import ToastContainerStyled from './components/ui/toast-container-styled';
 
 // store
 import { StoreProvider, AppStore } from './store';
+import AppRouting from './AppRouting';
 
 export default function App() {
   return (
-    <div>
-      <ThemeProvider theme={theme}>
-        <GlobalStyles />
+    <ThemeProvider theme={theme}>
+      <GlobalStyles />
+      <ToastContainerStyled />
+      <ModalProvider backgroundComponent={FadingBackground}>
+        <MountPoint />
         <StoreProvider value={new AppStore()}>
           <IPCConnect>
-            <Router>
-              <Routes>
-                <Route path="/" element={<Main />} />
-              </Routes>
-            </Router>
+            <AppRouting />
           </IPCConnect>
         </StoreProvider>
-      </ThemeProvider>
-    </div>
+      </ModalProvider>
+    </ThemeProvider>
   );
 }

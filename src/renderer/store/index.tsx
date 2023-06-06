@@ -2,11 +2,11 @@ import { createContext, useContext } from 'react';
 import Store from './store';
 
 interface IStoreProvider {
-  value: null | object;
+  value: null | Store;
   children: JSX.Element;
 }
 
-const StoreContext = createContext<any>(null);
+const StoreContext = createContext<Store | null>(null);
 
 export const StoreProvider = ({ children, value }: IStoreProvider) => (
   <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
