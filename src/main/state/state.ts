@@ -4,7 +4,7 @@ import path from 'path';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { Chromium } from 'main/chromium';
 import { Channel } from 'shared/ipc';
-import startIpc from '../ipc/ipc';
+import { registerIpcHandlers, deregisterIpcHandlers } from '../ipc/ipc';
 import { resolveHtmlPath } from '../util';
 import MenuBuilder from '../menu';
 import { IState } from './istate';
@@ -76,6 +76,9 @@ export default class State implements IState {
 
     this.mainWindow.on('closed', () => {
       this.mainWindow = null;
+      this.appCloseConfirmed = false;
+
+      deregisterIpcHandlers();
     });
 
     const menuBuilder = new MenuBuilder(this.mainWindow);
@@ -87,8 +90,15 @@ export default class State implements IState {
       return { action: 'deny' };
     });
 
-    startIpc(this);
+    registerIpcHandlers(this);
 
     return this.mainWindow;
+  }
+
+  killAllBrowserWindows() {
+    this.activeBrowserWindows.forEach((window) => {
+      window.kill();
+      this.activeBrowserWindows.delete(window.profileId);
+    });
   }
 }

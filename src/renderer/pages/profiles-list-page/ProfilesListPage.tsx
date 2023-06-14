@@ -13,6 +13,12 @@ import { StoredBrowserProfile, BrowserStatus } from 'shared/models';
 import StatusLabel from 'renderer/components/status-label';
 import * as S from './styles';
 
+const NOT_EDITABLE_STATUSES = [
+  BrowserStatus.Active,
+  BrowserStatus.PendingActive,
+  BrowserStatus.PendingInactive,
+];
+
 const ConfirmDeletionMsg = ({ name }: { name: string }) => (
   <>
     Are you sure you want to delete the <strong>{name}</strong>
@@ -56,7 +62,7 @@ const ProfilesListPage = observer(() => {
   const handleSessionDelete = async (id: string, name: string) => {
     const confirmed = await confirm(
       <span>
-        Are you sure you want to delete the <strong>{name}</strong> session data
+        Are you sure you want to delete the <strong>{name}</strong> session data?
       </span>
     );
     if (confirmed) {
@@ -129,21 +135,21 @@ const ProfilesListPage = observer(() => {
                       menu={[
                         <button
                           type="button"
-                          disabled={profile.status !== BrowserStatus.Inactive}
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
                           onClick={() => handleEdit(profile.id!)}
                         >
                           Edit Profile
                         </button>,
                         <button
                           type="button"
-                          disabled={profile.status !== BrowserStatus.Inactive}
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
                           onClick={() => handleDelete(profile)}
                         >
                           Delete Profile
                         </button>,
                         <button
                           type="button"
-                          disabled={profile.status !== BrowserStatus.Inactive}
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
                           onClick={() => handleSessionDelete(profile.id!, profile.name)}
                         >
                           Delete Sessions Data

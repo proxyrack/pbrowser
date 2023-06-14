@@ -1,5 +1,6 @@
-import { ChildProcess, spawn } from 'child_process';
+import { ChildProcess, spawn, spawnSync } from 'child_process';
 import { closeSync, openSync } from 'fs';
+import { isWindows } from './util';
 
 const CHROMIUM_PATH =
   process.platform === 'darwin'
@@ -28,6 +29,7 @@ export class Chromium {
     const args = [`--user-data-dir=${this.userDataDir}`, STARTING_URL];
     this.process = spawn(CHROMIUM_PATH, args, {
       stdio: ['ignore', this.outFile, this.errFile],
+      detached: !isWindows(),
     });
 
     this.process.on('close', () => {
@@ -40,7 +42,20 @@ export class Chromium {
   }
 
   kill() {
-    this.process?.kill();
+    if (!this.process || !this.process.pid) return;
+
+    if (isWindows()) {
+      const taskkillProc = spawnSync(`taskkill /pid ${this.process.pid} /T /F`, {
+        shell: true,
+        encoding: 'utf-8',
+      });
+      const { stderr } = taskkillProc;
+      if (stderr) {
+        this.process?.kill();
+      }
+    } else if (this.process.pid) {
+      process.kill(-this.process.pid, 'SIGKILL');
+    }
   }
 
   private cleanup() {

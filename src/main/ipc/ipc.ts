@@ -8,9 +8,8 @@ import { Chromium } from 'main/chromium';
 import { rmSync } from 'fs';
 import { IState } from '../state/istate';
 
-const startIpc = (state: IState): void => {
+export const registerIpcHandlers = (state: IState): void => {
   const profileManager = new ProfileManager(state.store);
-  const mainWindowWeb = state.mainWindow!.webContents;
 
   const getProfileDir = (profileId: string) => {
     return path.join(path.dirname(state.store.path), 'browser-profiles', profileId);
@@ -22,10 +21,13 @@ const startIpc = (state: IState): void => {
   };
 
   const browserStatusChanged = (status: BrowserStatusDto) => {
-    mainWindowWeb.send(Channel.ProfileStatusChange, status);
+    if (state.mainWindow === null) return;
+
+    state.mainWindow.webContents.send(Channel.ProfileStatusChange, status);
   };
 
   ipcMain.handle(Channel.CloseApp, async () => {
+    state.killAllBrowserWindows();
     state.appCloseConfirmed = true;
     state.mainWindow?.close();
   });
@@ -87,10 +89,13 @@ const startIpc = (state: IState): void => {
       instance.process?.once('spawn', () => {
         browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Active));
       });
+      instance.process?.once('exit', () => {
+        browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.PendingInactive));
+      });
       instance.process?.once('close', (code) => {
         state.activeBrowserWindows.delete(id);
         // set Inactive status only if closed normally or killed, otherwise set Error
-        if (code === 0 || code === null) {
+        if (code === 0 || code === 1 || code === null) {
           browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.Inactive));
         }
       });
@@ -111,7 +116,6 @@ const startIpc = (state: IState): void => {
       return MainResponse.error(new Error('Browser with this profile is not running'));
 
     try {
-      browserStatusChanged(new BrowserStatusDto(id, BrowserStatus.PendingInactive));
       const instance = state.activeBrowserWindows.get(id);
       instance?.kill();
 
@@ -152,4 +156,8 @@ const startIpc = (state: IState): void => {
   });
 };
 
-export default startIpc;
+export const deregisterIpcHandlers = () => {
+  Object.values(Channel).forEach((channel) => {
+    ipcMain.removeHandler(channel);
+  });
+};

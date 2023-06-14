@@ -14,3 +14,7 @@ export function resolveHtmlPath(htmlFileName: string) {
 export function isDebug() {
   return process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 }
+
+export function isWindows() {
+  return process.platform === 'win32';
+}

@@ -8,4 +8,5 @@ export interface IState {
   store: Store<IStore>;
   activeBrowserWindows: Map<string, Chromium>;
   appCloseConfirmed: boolean;
+  killAllBrowserWindows(): void;
 }
