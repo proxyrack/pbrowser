@@ -140,7 +140,7 @@ class Store {
 
   setGeneralSettings(data: GeneralSettings) {
     if (this.editedProfile === null) throw new Error('Profile is not currently edited');
-    this.editedProfile.general = data;
+    this.editedProfile = { ...this.editedProfile, general: data };
   }
 
   finishEditing() {

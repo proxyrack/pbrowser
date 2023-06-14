@@ -28,8 +28,7 @@ const Switch = ({ id, name, children, onClick = () => {} }: SwitchProps) => {
         onClick={callback}
         {...register(name)}
       />
-      <S.Switch />
-      <S.Label>{children}</S.Label>
+      <S.Label htmlFor={id}>{children}</S.Label>
     </S.SwitchBox>
   );
 };

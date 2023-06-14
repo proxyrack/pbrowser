@@ -1,7 +1,8 @@
 import { ThemeProvider } from 'styled-components';
 import { ModalProvider } from 'styled-react-modal';
 import IPCConnect from './ipc/IpcConnect';
-import { MountPoint, FadingBackground } from './components/ui/confirm-dialog';
+import { MountPoint } from './components/ui/confirm-dialog';
+import { FadingBackground } from './components/ui/dialog';
 
 // styles
 import GlobalStyles from './styles/globalStyles';

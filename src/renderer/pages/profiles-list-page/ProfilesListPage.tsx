@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from 'renderer/store';
 import Button from 'renderer/components/ui/button';
 import Dropdown from 'renderer/components/ui/dropdown';
@@ -11,6 +11,7 @@ import PageTitle from 'renderer/components/ui/page-title';
 import { useNavigate } from 'react-router-dom';
 import { StoredBrowserProfile, BrowserStatus } from 'shared/models';
 import StatusLabel from 'renderer/components/status-label';
+import ProfileSummaryDialog from 'renderer/components/profile-summary-dialog';
 import * as S from './styles';
 
 const NOT_EDITABLE_STATUSES = [
@@ -38,6 +39,10 @@ const ProfilesListPage = observer(() => {
     deleteSession,
   } = useStore();
   const navigate = useNavigate();
+  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<StoredBrowserProfile | null>(
+    null
+  );
 
   useEffect(() => {
     fetchProfiles();
@@ -70,8 +75,23 @@ const ProfilesListPage = observer(() => {
     }
   };
 
+  const showProfileSummary = (profile: StoredBrowserProfile) => {
+    setShowSummaryDialog(true);
+    setSelectedProfile(profile);
+  };
+
+  const hideProfileSummary = () => {
+    setShowSummaryDialog(false);
+  };
+
   return (
     <>
+      <ProfileSummaryDialog
+        show={showSummaryDialog}
+        profile={selectedProfile!}
+        onDismiss={hideProfileSummary}
+        afterClose={() => setSelectedProfile(null)}
+      />
       <PageTitle>Browser Profile List</PageTitle>
       <S.Card>
         <S.Table>
@@ -153,6 +173,9 @@ const ProfilesListPage = observer(() => {
                           onClick={() => handleSessionDelete(profile.id!, profile.name)}
                         >
                           Delete Sessions Data
+                        </button>,
+                        <button type="button" onClick={() => showProfileSummary(profile)}>
+                          Profile Summary
                         </button>,
                       ]}
                     />

@@ -5,12 +5,10 @@ import {
   createMountPoint,
   createConfirmationCreater,
 } from 'react-confirm';
-
-import { AlertTriangle, X } from 'react-feather';
-import { useState } from 'react';
-import Modal from 'styled-react-modal';
+import { AlertTriangle } from 'react-feather';
 import * as S from './styles';
 import Button, { ButtonColor } from '../button';
+import Dialog from '../dialog';
 
 type DialogButtonOptions = {
   label: string;
@@ -28,43 +26,23 @@ type ConfirmDialogProps = {
 
 const ConfirmDialog = confirmable(
   ({ show, proceed, confirmation, buttons }: ReactConfirmProps & ConfirmDialogProps) => {
-    const [opacity, setOpacity] = useState(0);
-
-    const afterOpen = () => {
-      setTimeout(() => {
-        setOpacity(1);
-      }, 100);
-    };
-
-    const beforeClose = () => {
-      return new Promise((resolve) => {
-        setOpacity(0);
-        setTimeout(resolve, 300);
-      });
-    };
-
     return (
-      <Modal
-        isOpen={show}
+      <Dialog
+        show={show}
+        size="sm"
+        title="Please Confirm"
+        onXClick={() => proceed(false)}
         onEscapeKeydown={() => proceed(false)}
-        afterOpen={afterOpen}
-        beforeClose={beforeClose}
-        backgroundProps={{ opacity }}
-      >
-        <S.ModalDialog opacity={opacity}>
-          <S.Title>
-            <S.Heading>Please Confirm</S.Heading>
-            <S.CloseButton type="button" onClick={() => proceed(false)}>
-              <X size={16} />
-            </S.CloseButton>
-          </S.Title>
-          <S.Content>
+        body={
+          <S.ContentContainer>
             <S.Icon>
               <AlertTriangle />
             </S.Icon>
             <S.Message>{confirmation}</S.Message>
-          </S.Content>
-          <S.Actions>
+          </S.ContentContainer>
+        }
+        footer={
+          <>
             <Button
               type="button"
               color={buttons.ok.color}
@@ -81,9 +59,9 @@ const ConfirmDialog = confirmable(
             >
               {buttons.cancel.label}
             </Button>
-          </S.Actions>
-        </S.ModalDialog>
-      </Modal>
+          </>
+        }
+      />
     );
   }
 );

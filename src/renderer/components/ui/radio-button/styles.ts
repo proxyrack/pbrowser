@@ -6,7 +6,6 @@ export const RadioContainer = styled.div`
 `;
 
 export const Radio = styled.input`
-  -webkit-appearance: none;
   appearance: none;
   margin: 0;
   width: 1.5rem;

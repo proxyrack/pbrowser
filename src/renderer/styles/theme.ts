@@ -17,7 +17,7 @@ const theme: DefaultTheme = {
     disabledDark: '#262D3E66',
   },
   transitions: {
-    defaultProperty: 'color, background-color, border-color, box-shadow',
+    defaultProperty: 'color, background-color, border-color, box-shadow, transform',
     defaultDuration: '0.2s',
     defaultFunction: 'ease-in-out',
   },
