@@ -9,8 +9,15 @@ import { confirm } from 'renderer/components/ui/confirm-dialog';
 import { observer } from 'mobx-react-lite';
 import PageTitle from 'renderer/components/ui/page-title';
 import { useNavigate } from 'react-router-dom';
-import { StoredBrowserProfile } from 'shared/models/stored-browser-profile';
+import { StoredBrowserProfile, BrowserStatus } from 'shared/models';
+import StatusLabel from 'renderer/components/status-label';
 import * as S from './styles';
+
+const NOT_EDITABLE_STATUSES = [
+  BrowserStatus.Active,
+  BrowserStatus.PendingActive,
+  BrowserStatus.PendingInactive,
+];
 
 const ConfirmDeletionMsg = ({ name }: { name: string }) => (
   <>
@@ -20,16 +27,25 @@ const ConfirmDeletionMsg = ({ name }: { name: string }) => (
 );
 
 const ProfilesListPage = observer(() => {
-  const { profiles, startEditing, fetchProfiles, deleteProfile } = useStore();
+  const {
+    profiles,
+    startEditing,
+    fetchProfiles,
+    fetchStatuses,
+    deleteProfile,
+    startBrowser,
+    stopBrowser,
+    deleteSession,
+  } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfiles();
   }, [fetchProfiles]);
 
-  const launchProfile = async (id: string) => {
-    await window.electron.api.launchProfile(id);
-  };
+  useEffect(() => {
+    fetchStatuses();
+  }, [fetchStatuses]);
 
   const handleEdit = (id: string) => {
     startEditing(id);
@@ -43,6 +59,17 @@ const ProfilesListPage = observer(() => {
     }
   };
 
+  const handleSessionDelete = async (id: string, name: string) => {
+    const confirmed = await confirm(
+      <span>
+        Are you sure you want to delete the <strong>{name}</strong> session data?
+      </span>
+    );
+    if (confirmed) {
+      deleteSession(id);
+    }
+  };
+
   return (
     <>
       <PageTitle>Browser Profile List</PageTitle>
@@ -52,7 +79,7 @@ const ProfilesListPage = observer(() => {
             <tr>
               <th className="name-col">Name</th>
               <th className="description-col">Description</th>
-              <th>Status</th>
+              <th className="status-col">Status</th>
               <th className="last-launch-col">Last Launch</th>
               <th className="actions-col">&nbsp;</th>
             </tr>
@@ -64,20 +91,40 @@ const ProfilesListPage = observer(() => {
                 <td className="break-word">
                   <CollapsibleParagraph text={profile.description} />
                 </td>
-                <td />
+                <td>
+                  <StatusLabel status={profile.status} />
+                </td>
                 <td>
                   <RelativeDate datetime={profile.lastLaunchDate} />
                 </td>
                 <td>
                   <S.Actions>
-                    <Button
-                      type="button"
-                      color="primary"
-                      size="s"
-                      onClick={() => launchProfile(profile.id!)}
-                    >
-                      Start
-                    </Button>
+                    {(profile.status === BrowserStatus.Inactive ||
+                      profile.status === BrowserStatus.PendingActive ||
+                      profile.status === BrowserStatus.StartError) && (
+                      <Button
+                        type="button"
+                        color="primary"
+                        size="s"
+                        disabled={profile.status === BrowserStatus.PendingActive}
+                        onClick={() => startBrowser(profile.id!)}
+                      >
+                        Start
+                      </Button>
+                    )}
+                    {(profile.status === BrowserStatus.Active ||
+                      profile.status === BrowserStatus.PendingInactive ||
+                      profile.status === BrowserStatus.StopError) && (
+                      <Button
+                        type="button"
+                        color="danger"
+                        size="s"
+                        disabled={profile.status === BrowserStatus.PendingInactive}
+                        onClick={() => stopBrowser(profile.id!)}
+                      >
+                        Stop
+                      </Button>
+                    )}
                     <Dropdown
                       position="left"
                       trigger={
@@ -86,11 +133,26 @@ const ProfilesListPage = observer(() => {
                         </S.MoreButton>
                       }
                       menu={[
-                        <button type="button" onClick={() => handleEdit(profile.id!)}>
+                        <button
+                          type="button"
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
+                          onClick={() => handleEdit(profile.id!)}
+                        >
                           Edit Profile
                         </button>,
-                        <button type="button" onClick={() => handleDelete(profile)}>
+                        <button
+                          type="button"
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
+                          onClick={() => handleDelete(profile)}
+                        >
                           Delete Profile
+                        </button>,
+                        <button
+                          type="button"
+                          disabled={NOT_EDITABLE_STATUSES.includes(profile.status)}
+                          onClick={() => handleSessionDelete(profile.id!, profile.name)}
+                        >
+                          Delete Sessions Data
                         </button>,
                       ]}
                     />

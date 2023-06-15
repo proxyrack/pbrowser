@@ -2,7 +2,9 @@ import { BrowserWindow, app, shell } from 'electron';
 import Store from 'electron-store';
 import path from 'path';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
-import startIpc from '../ipc/ipc';
+import { Chromium } from 'main/chromium';
+import { Channel } from 'shared/ipc';
+import { registerIpcHandlers, deregisterIpcHandlers } from '../ipc/ipc';
 import { resolveHtmlPath } from '../util';
 import MenuBuilder from '../menu';
 import { IState } from './istate';
@@ -10,11 +12,13 @@ import { IStore } from './istore';
 
 export default class State implements IState {
   mainWindow: BrowserWindow | null = null;
-
   store: Store<IStore>;
+  activeBrowserWindows: Map<string, Chromium>;
+  appCloseConfirmed: boolean = false;
 
   constructor() {
     this.store = new Store<IStore>({ cwd: app.isPackaged ? undefined : 'pbrowser' });
+    this.activeBrowserWindows = new Map<string, Chromium>();
   }
 
   static async installExtensions() {
@@ -63,8 +67,18 @@ export default class State implements IState {
       }
     });
 
+    this.mainWindow.on('close', (event) => {
+      if (this.appCloseConfirmed || this.activeBrowserWindows.size === 0) return;
+
+      event.preventDefault();
+      this.mainWindow?.webContents.send(Channel.AppCloseAttempt);
+    });
+
     this.mainWindow.on('closed', () => {
       this.mainWindow = null;
+      this.appCloseConfirmed = false;
+
+      deregisterIpcHandlers();
     });
 
     const menuBuilder = new MenuBuilder(this.mainWindow);
@@ -76,8 +90,15 @@ export default class State implements IState {
       return { action: 'deny' };
     });
 
-    startIpc(this);
+    registerIpcHandlers(this);
 
     return this.mainWindow;
+  }
+
+  killAllBrowserWindows() {
+    this.activeBrowserWindows.forEach((window) => {
+      window.kill();
+      this.activeBrowserWindows.delete(window.profileId);
+    });
   }
 }

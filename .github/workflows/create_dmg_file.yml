@@ -3,8 +3,8 @@ name: Create_DMG_file
 on:
   push:
     branches:
-      - release*
-      - fix*
+      - release/**
+      - fix/**
 
 jobs:
   create_dmg_file:
